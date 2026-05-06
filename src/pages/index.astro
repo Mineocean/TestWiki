@@ -85,8 +85,14 @@
 
       .footer {
         text-align: center; padding: 2.5rem 2rem; font-size: 0.85rem;
-        color: var(--color-muted); border-top: 1px solid #f0f0f0;
+        color: var(--color-muted); border-top: 1px solid var(--color-border);
       }
+
+      [data-theme="dark"] .card { background: #171717; border-color: #2a2a2a; }
+      [data-theme="dark"] .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.3); border-color: #333; }
+      [data-theme="dark"] .btn-outline { background: #171717; color: #ccc; }
+      [data-theme="dark"] .btn-outline:hover { background: #1e1e1e; }
+      [data-theme="dark"] .hero::before { background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.1), transparent 55%); }
     </style>
   </head>
   <body>
@@ -132,5 +138,30 @@
     <footer class="footer">
       <p>Powered by Astro · Deploy anywhere</p>
     </footer>
+
+    <button id="theme-toggle" style="position:fixed;bottom:1.5rem;right:1.5rem;width:2.5rem;height:2.5rem;border-radius:0.75rem;border:1px solid var(--color-border);background:var(--color-bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-muted);z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.08)" aria-label="切换主题">
+      <svg id="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      <svg id="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+
+    <script>
+      (function() {
+        const saved = localStorage.getItem('theme');
+        const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', saved || prefers);
+        if ((saved || prefers) === 'dark') {
+          document.getElementById('theme-icon-sun').style.display = 'none';
+          document.getElementById('theme-icon-moon').style.display = 'block';
+        }
+      })();
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        document.getElementById('theme-icon-sun').style.display = next === 'dark' ? 'none' : 'block';
+        document.getElementById('theme-icon-moon').style.display = next === 'dark' ? 'block' : 'none';
+      });
+    </script>
   </body>
 </html>
