@@ -1,0 +1,10 @@
+{
+  "salt": "cf67fc138d4f950649234d1e2cab9ef2",
+  "short": true,
+  "templateTitle": "机密文档 | Sage",
+  "templateButton": "解密",
+  "templatePlaceholder": "输入密码",
+  "templateError": "密码错误，请重试",
+  "templateInstructions": "此文档受密码保护",
+  "remember": false
+}

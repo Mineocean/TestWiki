@@ -17,6 +17,7 @@ const meta: MetaEntry[] = [
     items: [
       { label: '架构设计', slug: 'dev/architecture' },
       { label: '接口说明', slug: 'dev/api-reference' },
+      { label: '🔒 机密文档', slug: 'dev/secret' },
     ],
   },
 ]
