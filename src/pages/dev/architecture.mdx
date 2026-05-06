@@ -1,0 +1,62 @@
+---
+layout: ../../layouts/DocsLayout.astro
+title: 架构设计
+description: 了解项目技术栈与整体架构。
+---
+
+## 技术栈
+
+- **框架**: Astro 5
+- **内容**: MDX（Markdown + 组件）
+- **构建**: 纯静态生成（SSG） → `dist/`
+- **部署**: Vercel / Netlify / Cloudflare Pages 等静态托管平台
+
+## 整体架构
+
+```
+┌─────────────────────────────────────┐
+│           浏览器 / 用户              │
+└─────────────┬───────────────────────┘
+              │ HTTPS
+┌─────────────▼───────────────────────┐
+│        静态托管平台                   │
+│   ┌─────────────────────────────┐   │
+│   │   dist/ (静态输出)           │   │
+│   │   ├── index.html            │   │
+│   │   ├── getting-started.html  │   │
+│   │   ├── dev/                  │   │
+│   │   └── assets/                │   │
+│   └─────────────────────────────┘   │
+└─────────────────────────────────────┘
+```
+
+## 构建流程
+
+1. **源文件**: `.mdx` 文件存放在 `src/pages/` 目录
+2. **Astro 编译**: MDX → HTML，零 JS 默认输出
+3. **路由**: 文件路径自动映射为 URL
+4. **输出**: `dist/` 目录，纯静态 HTML/CSS
+
+## 目录约定
+
+| 目录/文件 | 用途 |
+|-----------|------|
+| `src/pages/` | 页面文件（路由自动映射） |
+| `src/layouts/` | 布局组件 |
+| `src/components/` | UI 组件 |
+| `astro.config.mjs` | Astro 全局配置 |
+
+## 路由映射
+
+Astro 文件路由自动映射：
+
+- `src/pages/index.astro` → `/`
+- `src/pages/getting-started.mdx` → `/getting-started`
+- `src/pages/dev/architecture.mdx` → `/dev/architecture`
+- `src/pages/dev/api-reference.mdx` → `/dev/api-reference`
+
+## 扩展点
+
+- **MDX 插件**: 支持 remark / rehype 插件
+- **UI 框架**: 可在 `.astro` 组件中使用 React/Vue/Svelte
+- **集成**: 丰富的 Astro 集成生态

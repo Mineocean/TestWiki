@@ -1,52 +1,52 @@
 # Markdown Wiki
 
-基于 Next.js + MDX 的轻量级文档站点，支持纯静态部署。
+基于 Astro 的轻量级 Markdown 文档站点，支持纯静态部署。
 
 ## 技术栈
 
-- [Next.js](https://nextjs.org/) — React 全栈框架（App Router）
-- [MDX](https://mdxjs.com/) — Markdown + React 组件
-- [Tailwind CSS](https://tailwindcss.com/) — 原子化 CSS 框架
+- [Astro](https://astro.build/) — 零 JS 默认的静态站点框架
+- [MDX](https://mdxjs.com/) — Markdown + 组件
 
 ## 本地开发
 
 ```bash
 npm install
-npm run dev
+npm run dev        # 启动开发服务器 → http://localhost:4321
 ```
 
-## 构建
+## 构建 & 预览
 
 ```bash
-npm run build
+npm run build      # 构建到 dist/
+npm run preview    # 预览构建产物 → http://localhost:4321
 ```
-
-产物在 `out/` 目录，为纯静态文件，可部署到任意静态托管平台。
-
-## 部署
-
-项目输出纯静态文件，可一键部署到：
-
-- **Vercel**: Framework Preset 自动检测 Next.js
-- **Netlify**: Build `npm run build`, Publish `out`
-- **Cloudflare Pages**: Build `npm run build`, Output `out`
 
 ## 项目结构
 
 ```
-├── app/                 # Next.js App Router
-│   ├── layout.tsx       # 根布局
-│   ├── page.tsx         # 首页
-│   └── docs/            # 文档路由
-├── components/          # 共享组件
-├── content/             # MDX 文档内容
-├── lib/
-│   └── source.ts        # 内容源配置
-└── tailwind.config.ts   # Tailwind 配置
+src/
+├── pages/              # 页面（文件即路由）
+│   ├── index.astro     # 首页
+│   ├── *.mdx           # 文档页面
+│   └── dev/
+├── layouts/            # 布局组件
+│   └── DocsLayout.astro
+└── components/         # 预留
+astro.config.mjs        # Astro 配置
 ```
 
 ## 添加新文档
 
-1. 在 `content/` 目录创建 `.mdx` 文件
-2. 在 `lib/source.ts` 中注册文档路由和侧边栏
-3. 访问 `/docs/{slug}` 查看
+1. 在 `src/pages/` 创建 `.mdx` 文件
+2. 添加 frontmatter: `layout: ../layouts/DocsLayout.astro`
+3. 在侧边栏的 `DocsLayout.astro` 中添加导航链接
+4. 直接访问对应路径
+
+## 部署
+
+输出纯静态文件到 `dist/`，可直接部署：
+
+- **Vercel**: 自动检测 Astro
+- **Netlify**: Build `npm run build`, Publish `dist`
+- **Cloudflare Pages**: Build `npm run build`, Output `dist`
+- **任意静态服务器**: 将 `dist/` 目录内容上传即可

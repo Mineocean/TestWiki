@@ -1,0 +1,135 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Wiki</title>
+    <meta name="description" content="基于 Astro 的轻量级文档站点 · 纯静态 · 零运行时" />
+
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+
+    <style>
+      :root {
+        --color-bg: #fff; --color-fg: #171717; --color-muted: #737373;
+        --color-border: #e5e5e5; --color-accent: #7c3aed;
+        --color-accent-light: #f5f3ff;
+      }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background: var(--color-bg); color: var(--color-fg);
+        min-height: 100vh; line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: var(--color-accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+
+      .hero {
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; text-align: center;
+        min-height: 72vh; padding: 2rem;
+        position: relative;
+      }
+      .hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.07), transparent 55%);
+      }
+      .hero > * { position: relative; z-index: 1; }
+
+      h1 {
+        font-size: clamp(2.8rem, 7vw, 4rem);
+        font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+        background: linear-gradient(180deg, #171717 0%, #525252 50%, #a3a3a3 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      h1 .accent {
+        -webkit-text-fill-color: var(--color-accent);
+      }
+
+      .tagline { font-size: 1.2rem; color: var(--color-muted); margin-top: 1rem; font-weight: 400; }
+
+      .actions { margin-top: 2.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.7rem 1.75rem;
+        border-radius: 0.75rem; font-size: 0.9rem; font-weight: 500;
+        transition: all 0.15s; cursor: pointer;
+      }
+      .btn:hover { text-decoration: none; }
+      .btn-primary { background: #171717; color: #fff; }
+      .btn-primary:hover { background: #262626; transform: translateY(-1px); }
+      .btn-outline { border: 1px solid var(--color-border); background: #fff; color: #404040; }
+      .btn-outline:hover { background: var(--color-accent-light); border-color: #d4c4fc; transform: translateY(-1px); }
+
+      .features {
+        max-width: 900px; margin: 0 auto; padding: 0 1.5rem 4rem;
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.25rem;
+      }
+      .card {
+        padding: 1.5rem; border-radius: 0.85rem;
+        border: 1px solid var(--color-border);
+        transition: box-shadow 0.2s, border-color 0.2s;
+        background: #fff;
+      }
+      .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.05); border-color: #dcdcdc; }
+      .card-icon { font-size: 1.75rem; margin-bottom: 0.75rem; display: block; }
+      .card h3 { font-size: 1.05rem; font-weight: 650; margin-bottom: 0.4rem; }
+      .card p { font-size: 0.875rem; color: var(--color-muted); line-height: 1.6; }
+
+      .footer {
+        text-align: center; padding: 2.5rem 2rem; font-size: 0.85rem;
+        color: var(--color-muted); border-top: 1px solid #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <h1>Markdown <span class="accent">Wiki</span></h1>
+      <p class="tagline">轻量级文档站点 · 纯静态 · Astro 驱动</p>
+      <div class="actions">
+        <a href="/getting-started" class="btn btn-primary">
+          快速开始
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+        <a href="/dev/architecture" class="btn btn-outline">
+          开发指南
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <section class="features">
+      <div class="card">
+        <span class="card-icon">📝</span>
+        <h3>Markdown 编写</h3>
+        <p>所有文档使用标准 Markdown 语法编写，支持标题、列表、代码块、表格等常见格式。</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">⚡</span>
+        <h3>零 JS 默认</h3>
+        <p>Astro 默认输出纯静态 HTML+CSS，仅在需要交互时添加少量 JS，首屏几乎瞬时加载。</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🔍</span>
+        <h3>智能导航</h3>
+        <p>可折叠侧边栏 + 滚动高亮目录，助你快速定位目标内容。</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🚀</span>
+        <h3>一键部署</h3>
+        <p>输出纯静态文件，可直接部署到 Vercel、Netlify、Cloudflare Pages 等平台。</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Powered by Astro · Deploy anywhere</p>
+    </footer>
+  </body>
+</html>

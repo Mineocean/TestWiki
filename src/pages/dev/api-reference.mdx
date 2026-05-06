@@ -1,0 +1,83 @@
+---
+layout: ../../layouts/DocsLayout.astro
+title: 接口说明
+description: 站点 URL 结构与配置接口说明。
+---
+
+> Astro 静态站点生成器。以下说明涵盖站点的 URL 结构和配置。
+
+---
+
+## URL 结构
+
+| 路径 | 说明 |
+|------|------|
+| `/` | 首页（`src/pages/index.astro`） |
+| `/getting-started` | 快速开始指南 |
+| `/dev/architecture` | 架构设计文档 |
+| `/dev/api-reference` | 接口说明（本页） |
+
+---
+
+## 页面配置
+
+每个 `.mdx` 文件使用 YAML frontmatter：
+
+```yaml
+---
+layout: ../../layouts/DocsLayout.astro
+title: 页面标题
+description: 页面描述
+---
+```
+
+- `layout`: 指定布局组件
+- `title`: 页面标题
+- `description`: SEO 描述
+
+---
+
+## 布局组件
+
+`src/layouts/DocsLayout.astro` 提供统一的文档布局：
+
+- 顶部导航栏
+- 左侧边栏导航
+- 右侧本页目录
+- 内容区域
+
+所有 `.mdx` 文档页面通过 frontmatter 的 `layout` 字段引用此布局。
+
+---
+
+## Astro 配置
+
+`astro.config.mjs`：
+
+```javascript
+import { defineConfig } from 'astro/config'
+import mdx from '@astrojs/mdx'
+
+export default defineConfig({
+  integrations: [mdx()],
+  output: 'static',
+})
+```
+
+- `integrations: [mdx()]`: 启用 MDX 支持
+- `output: 'static'`: 纯静态输出（默认）
+
+---
+
+## 构建输出
+
+```
+dist/
+├── index.html
+├── getting-started.html
+├── dev/
+│   ├── architecture.html
+│   └── api-reference.html
+├── _astro/
+│   └── *.css
+```

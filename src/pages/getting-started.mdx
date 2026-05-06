@@ -1,0 +1,83 @@
+---
+layout: ../layouts/DocsLayout.astro
+title: 快速开始
+description: 欢迎使用 Markdown Wiki，本指南将帮助你快速上手。
+---
+
+欢迎使用 Markdown Wiki。本指南将帮助你快速上手。
+
+---
+
+## 项目结构
+
+```
+/
+├── src/                  # Astro 源码
+│   ├── pages/            # 页面路由
+│   │   ├── index.astro   # 首页
+│   │   ├── *.mdx         # 文档页面
+│   │   └── dev/
+│   ├── layouts/          # 布局组件
+│   └── components/       # UI 组件
+├── astro.config.mjs      # Astro 配置
+├── package.json
+└── README.md
+```
+
+---
+
+## 本地开发
+
+### 安装依赖
+
+```bash
+npm install
+```
+
+### 启动开发服务器
+
+```bash
+npm run dev
+```
+
+Astro 会在 `http://localhost:4321` 启动热重载开发服务器。
+
+### 构建生产版本
+
+```bash
+npm run build
+```
+
+构建产物输出到 `dist/` 目录，为纯静态文件。
+
+---
+
+## 添加新文档
+
+1. 在 `src/pages/` 目录创建 `.mdx` 文件
+2. 添加 frontmatter 指定 `layout: ../layouts/DocsLayout.astro`
+3. 访问对应路径即可查看
+
+---
+
+## 部署
+
+项目输出纯静态文件，可一键部署到：
+
+- **Vercel**: 自动检测 Astro
+- **Netlify**: Build Command `npm run build`, Publish Directory `dist`
+- **Cloudflare Pages**: Build Command `npm run build`, Output Directory `dist`
+
+---
+
+## Markdown 语法参考
+
+| 元素 | 语法 |
+|------|------|
+| 标题 | `# H1` `## H2` `### H3` |
+| 粗体 | `**粗体**` |
+| 斜体 | `*斜体*` |
+| 链接 | `[文字](url)` |
+| 图片 | `![alt](url)` |
+| 代码块 | ` ```语言 ` |
+| 表格 | `\| 列1 \| 列2 \|` |
