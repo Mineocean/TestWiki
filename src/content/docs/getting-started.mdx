@@ -1,5 +1,4 @@
 ---
-layout: ../layouts/DocsLayout.astro
 title: 快速开始
 description: 欢迎使用 Markdown Wiki，本指南将帮助你快速上手。
 ---
@@ -11,17 +10,13 @@ description: 欢迎使用 Markdown Wiki，本指南将帮助你快速上手。
 ## 项目结构
 
 ```
-/
-├── src/                  # Astro 源码
-│   ├── pages/            # 页面路由
-│   │   ├── index.astro   # 首页
-│   │   ├── *.mdx         # 文档页面
-│   │   └── dev/
-│   ├── layouts/          # 布局组件
-│   └── components/       # UI 组件
-├── astro.config.mjs      # Astro 配置
-├── package.json
-└── README.md
+src/content/docs/         ← 文档内容（丢 .mdx 即可）
+├── _meta.ts              ← 侧边栏配置
+├── getting-started.mdx
+└── dev/
+    ├── _meta.ts
+    ├── architecture.mdx
+    └── api-reference.mdx
 ```
 
 ---
@@ -54,19 +49,30 @@ npm run build
 
 ## 添加新文档
 
-1. 在 `src/pages/` 目录创建 `.mdx` 文件
-2. 添加 frontmatter 指定 `layout: ../layouts/DocsLayout.astro`
-3. 访问对应路径即可查看
+1. 在 `src/content/docs/` 目录创建 `.mdx` 文件
+2. 在对应目录的 `_meta.ts` 中添加一行标题和路径
+3. 完成，无需其他操作
+
+```
+# 1. 创建文件: src/content/docs/tutorial.mdx
+---
+title: 教程
+---
+
+## 第一步
+...
+
+# 2. 在 src/content/docs/_meta.ts 加一行:
+{ label: '教程', slug: 'tutorial' }
+```
 
 ---
 
 ## 部署
 
-项目输出纯静态文件，可一键部署到：
-
 - **Vercel**: 自动检测 Astro
-- **Netlify**: Build Command `npm run build`, Publish Directory `dist`
-- **Cloudflare Pages**: Build Command `npm run build`, Output Directory `dist`
+- **Netlify**: Build `npm run build`, Publish `dist`
+- **Cloudflare Pages**: Build `npm run build`, Output `dist`
 
 ---
 

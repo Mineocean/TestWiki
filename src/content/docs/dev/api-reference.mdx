@@ -1,0 +1,73 @@
+---
+title: 接口说明
+description: 站点配置与接口说明。
+---
+
+> Astro Content Collections 驱动的文档站点。以下说明涵盖配置方式。
+
+---
+
+## URL 结构
+
+| 路径 | 说明 |
+|------|------|
+| `/` | 首页 |
+| `/docs/getting-started` | 快速开始 |
+| `/docs/dev/architecture` | 架构设计 |
+| `/docs/dev/api-reference` | 接口说明（本页） |
+
+---
+
+## _meta.ts 配置
+
+每个目录下的 `_meta.ts` 定义侧边栏：
+
+```ts
+import type { MetaEntry } from '../_meta'
+
+const meta: MetaEntry[] = [
+  { label: '架构设计', slug: 'dev/architecture' },
+  { label: '接口说明', slug: 'dev/api-reference' },
+]
+
+export default meta
+```
+
+### 类型
+
+```ts
+interface MetaItem {
+  label: string   // 侧边栏显示名
+  slug: string    // 对应的文档路径
+}
+
+interface MetaGroup {
+  label: string        // 分组标题
+  items: MetaItem[]    // 分组下的子项
+}
+
+type MetaEntry = MetaItem | MetaGroup
+```
+
+---
+
+## 页面 Frontmatter
+
+每个 `.mdx` 文件仅需：
+
+```yaml
+---
+title: 页面标题
+description: 可选描述（SEO）
+---
+```
+
+无需指定 layout——由 `[...slug].astro` 统一处理。
+
+---
+
+## 添加流程
+
+1. 在对应目录创建 `.mdx`
+2. 在 `_meta.ts` 加一行配置
+3. 完成，构建后自动生效

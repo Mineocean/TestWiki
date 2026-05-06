@@ -1,0 +1,64 @@
+---
+title: 架构设计
+description: 了解项目技术栈与整体架构。
+---
+
+## 技术栈
+
+- **框架**: Astro 6
+- **内容**: MDX（Content Collections）
+- **构建**: SSG → `dist/`
+- **部署**: Vercel / Netlify / Cloudflare Pages
+
+## 整体架构
+
+```
+┌─────────────────────────────────┐
+│         浏览器 / 用户            │
+└───────────┬─────────────────────┘
+            │ HTTPS
+┌───────────▼─────────────────────┐
+│      静态托管平台                 │
+│  ┌──────────────────────────┐   │
+│  │  dist/                   │   │
+│  │  ├── index.html          │   │
+│  │  ├── docs/getting-started│   │
+│  │  └── docs/dev/           │   │
+│  └──────────────────────────┘   │
+└─────────────────────────────────┘
+```
+
+## 内容管理
+
+采用 **文件夹即层级** 模式：
+
+```
+src/content/docs/          → /docs/
+├── getting-started.mdx    → /docs/getting-started
+└── dev/                   → /docs/dev/
+    ├── architecture.mdx   → /docs/dev/architecture
+    └── api-reference.mdx  → /docs/dev/api-reference
+```
+
+每个目录下的 `_meta.ts` 定义该层级的侧边栏：
+
+```ts
+// src/content/docs/_meta.ts
+export default [
+  { label: '快速开始', slug: 'getting-started' },
+  {
+    label: '开发指南',
+    items: [
+      { label: '架构设计', slug: 'dev/architecture' },
+      { label: '接口说明', slug: 'dev/api-reference' },
+    ],
+  },
+]
+```
+
+## 构建流程
+
+1. `.mdx` → Astro Content Collections 自动识别
+2. `[...slug].astro` 按 slug 匹配对应文档
+3. `_meta.ts` → 自动生成侧边栏导航
+4. MDX → 静态 HTML
