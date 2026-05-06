@@ -43,40 +43,27 @@
             background: var(--color-bg); border: 1px solid var(--color-border);
             border-radius: 0.85rem; padding: 2rem;
             box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            text-align: center;
         }
-        .staticrypt-instructions {
-            color: var(--color-muted); font-size: 0.9rem;
-            margin-bottom: 1.25rem; line-height: 1.5;
-        }
-        .staticrypt-password-container {
-            position: relative; width: 100%; margin: 0 0 0.75rem;
-        }
+        .staticrypt-instructions { color: var(--color-muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+        .staticrypt-password-container { position: relative; width: 100%; margin: 0 0 0.75rem; }
         .staticrypt-form input[type="password"] {
-            width: 100%; border: 1px solid var(--color-border);
-            border-radius: 0.65rem; background: var(--color-surface);
-            color: var(--color-fg); font-size: 0.95rem;
-            padding: 0.75rem 1rem; font-family: inherit;
-            outline: none; transition: border-color 0.15s;
+            width: 100%; border: 1px solid var(--color-border); border-radius: 0.65rem;
+            background: var(--color-surface); color: var(--color-fg); font-size: 0.95rem;
+            padding: 0.75rem 1rem; font-family: inherit; outline: none; transition: border-color 0.15s;
         }
-        .staticrypt-form input[type="password"]:focus {
-            border-color: var(--color-accent);
-        }
-        .staticrypt-form input[type="password"]::placeholder {
-            color: var(--color-muted);
-        }
+        .staticrypt-form input[type="password"]:focus { border-color: var(--color-accent); }
+        .staticrypt-form input[type="password"]::placeholder { color: var(--color-muted); }
         .staticrypt-decrypt-button {
             width: 100%; border: none; border-radius: 0.65rem;
             background: var(--color-accent); color: #fff;
             font-size: 0.9rem; font-weight: 600; padding: 0.75rem;
-            cursor: pointer; font-family: inherit;
-            transition: background 0.15s; text-transform: none;
-            letter-spacing: 0;
+            cursor: pointer; font-family: inherit; transition: opacity 0.15s;
+            text-transform: none; letter-spacing: 0;
         }
-        .staticrypt-decrypt-button:hover { background: #6d28d9; }
-        .staticrypt-error {
-            color: #ef4444; font-size: 0.85rem;
-            margin-top: 0.75rem; min-height: 1.25em; text-align: left;
-        }
+        .staticrypt-decrypt-button:hover { opacity: 0.9; }
+        .staticrypt-error { color: #ef4444; font-size: 0.85rem; margin-top: 0.75rem; min-height: 1.25em; }
+
         .theme-btn {
             position: fixed; bottom: 1.5rem; right: 1.5rem;
             width: 2.5rem; height: 2.5rem; border-radius: 0.75rem;
@@ -94,14 +81,23 @@
         <div class="staticrypt-form">
             <p class="staticrypt-instructions">此文档受密码保护</p>
             <div class="staticrypt-password-container">
-                <input type="password" id="staticrypt-password" placeholder="输入密码" />
+                <input type="password" id="staticrypt-password" placeholder="输入密码" autofocus />
             </div>
-            <button class="staticrypt-decrypt-button">解密</button>
-            <div class="staticrypt-error" id="staticrypt-error">密码错误，请重试</div>
+            <input type="submit" class="staticrypt-decrypt-button" value="解密" />
+            <div class="staticrypt-error" id="staticrypt-error"></div>
         </div>
     </div>
 
     <button class="theme-btn" id="theme-btn" title="切换主题">☀</button>
+
+    <script>
+        const staticryptInitiator = /*[|js_staticrypt|]*/ 0;
+        const templateError = "密码错误，请重试",
+              templateToggleAltShow = "显示密码",
+              templateToggleAltHide = "隐藏密码",
+              isRememberEnabled = /*[|is_remember_enabled|]*/ 0,
+              staticryptConfig = /*[|staticrypt_config|]*/ 0;
+    </script>
 
     <script>
         (function() {
