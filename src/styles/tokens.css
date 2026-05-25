@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════════════════
+   Design Tokens — single source of truth for colors
+   Shared across all pages (DocsLayout, index, 404)
+   ═══════════════════════════════════════════════════ */
+
+:root {
+  /* Core */
+  --color-bg: #ffffff;
+  --color-fg: #171717;
+  --color-fg-secondary: #404040;
+  --color-muted: #737373;
+  --color-border: #e5e5e5;
+  --color-border-light: #f0f0f0;
+  --color-accent: #7c3aed;
+  --color-accent-soft: #f5f3ff;
+  --color-surface: #fafafa;
+  --color-surface-raised: #ffffff;
+  --color-nav-bg: rgba(255, 255, 255, 0.88);
+  --color-code-bg: #f5f5f5;
+  --color-overlay: rgba(0, 0, 0, 0.35);
+  --color-bg-rgb: 255, 255, 255;
+  --color-fg-rgb: 23, 23, 23;
+
+  /* Blockquote */
+  --color-blockquote-bg: rgba(124, 58, 237, 0.06);
+  --color-blockquote-border: #c4b5fd;
+
+  /* Scrollbar */
+  --color-scrollbar-thumb: #d4d4d4;
+
+  /* Search */
+  --color-search-bg: #ffffff;
+  --color-search-hover: #f5f5f5;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 20px 60px rgba(0, 0, 0, 0.12);
+  --shadow-sidebar: 2px 0 12px rgba(0, 0, 0, 0.08);
+  --shadow-toggle: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  /* Card (homepage shared) */
+  --color-card-bg: #ffffff;
+  --color-card-hover-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  --color-card-hover-border: #dcdcdc;
+
+  /* Button outline (homepage shared) */
+  --color-btn-outline-bg: #ffffff;
+  --color-btn-outline-fg: #404040;
+  --color-btn-outline-hover-bg: #f5f3ff;
+  --color-btn-outline-hover-border: #d4c4fc;
+
+  /* Hero gradient (homepage shared) */
+  --color-hero-gradient: radial-gradient(ellipse at 50% 0%, rgba(124, 58, 237, 0.07), transparent 55%);
+
+  /* Button primary (homepage) */
+  --color-btn-primary-bg: #171717;
+  --color-btn-primary-fg: #ffffff;
+  --color-btn-primary-hover: #262626;
+
+  /* H1 gradient */
+  --color-h1-gradient-from: #171717;
+  --color-h1-gradient-mid: #525252;
+  --color-h1-gradient-to: #a3a3a3;
+
+  /* Table */
+  --color-table-header-bg: var(--color-surface);
+  --color-table-cell-border: var(--color-border-light);
+}
+
+[data-theme="dark"] {
+  /* Core */
+  --color-bg: #0a0a0a;
+  --color-fg: #e5e5e5;
+  --color-fg-secondary: #cccccc;
+  --color-muted: #8b8b8b;
+  --color-border: #262626;
+  --color-border-light: #1e1e1e;
+  --color-accent: #a78bfa;
+  --color-accent-soft: rgba(139, 92, 246, 0.12);
+  --color-surface: #141414;
+  --color-surface-raised: #1a1a1a;
+  --color-nav-bg: rgba(10, 10, 10, 0.88);
+  --color-code-bg: #1a1a1a;
+  --color-overlay: rgba(0, 0, 0, 0.65);
+  --color-bg-rgb: 10, 10, 10;
+  --color-fg-rgb: 229, 229, 229;
+
+  /* Blockquote */
+  --color-blockquote-bg: rgba(139, 92, 246, 0.08);
+  --color-blockquote-border: #5b3ea8;
+
+  /* Scrollbar */
+  --color-scrollbar-thumb: #404040;
+
+  /* Search */
+  --color-search-bg: #171717;
+  --color-search-hover: #1e1e1e;
+
+  /* Shadows */
+  --shadow-sm: none;
+  --shadow-md: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-sidebar: 2px 0 16px rgba(0, 0, 0, 0.4);
+  --shadow-toggle: 0 2px 8px rgba(0, 0, 0, 0.4);
+
+  /* Card (homepage shared) */
+  --color-card-bg: #171717;
+  --color-card-hover-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --color-card-hover-border: #333333;
+
+  /* Button outline */
+  --color-btn-outline-bg: #171717;
+  --color-btn-outline-fg: #cccccc;
+  --color-btn-outline-hover-bg: #1e1e1e;
+  --color-btn-outline-hover-border: #333333;
+
+  /* Hero gradient */
+  --color-hero-gradient: radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.12), transparent 55%);
+
+  /* Button primary (homepage) */
+  --color-btn-primary-bg: #ffffff;
+  --color-btn-primary-fg: #0a0a0a;
+  --color-btn-primary-hover: #e5e5e5;
+
+  /* H1 gradient */
+  --color-h1-gradient-from: #e5e5e5;
+  --color-h1-gradient-mid: #a3a3a3;
+  --color-h1-gradient-to: #525252;
+
+  /* Table */
+  --color-table-header-bg: #1a1a1a;
+  --color-table-cell-border: #1e1e1e;
+}

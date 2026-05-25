@@ -1,4 +1,5 @@
 ---
+import '../styles/tokens.css'
 ---
 
 <!DOCTYPE html>
@@ -7,21 +8,58 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>404 | Sage</title>
-    <style>
-      :root { --color-bg: #fafafa; --color-fg: #171717; --color-muted: #737373; --color-accent: #7c3aed; }
-      [data-theme="dark"] { --color-bg: #0d0d0d; --color-fg: #ededed; --color-muted: #666; }
+    <style is:global>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        color-scheme: light dark;
+      }
       body {
         font-family: system-ui, -apple-system, sans-serif;
-        display: flex; align-items: center; justify-content: center;
-        min-height: 100vh; margin: 0;
-        background: var(--color-bg); color: var(--color-fg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100dvh;
+        background: var(--color-bg);
+        color: var(--color-fg);
         text-align: center;
+        transition: background 0.3s ease, color 0.3s ease;
       }
-      h1 { font-size: 5rem; font-weight: 800; margin: 0; color: var(--color-muted); opacity: 0.3; }
-      p { color: var(--color-muted); margin: 0.5rem 0 1.5rem; font-size: 1.1rem; }
+      h1 {
+        font-size: 5rem;
+        font-weight: 800;
+        margin: 0;
+        color: var(--color-muted);
+        opacity: 0.3;
+      }
+      p {
+        color: var(--color-muted);
+        margin: 0.5rem 0 1.5rem;
+        font-size: 1.1rem;
+      }
       a {
-        display: inline-block; padding: 0.6rem 1.5rem; border-radius: 0.5rem;
-        background: var(--color-fg); color: var(--color-bg); text-decoration: none; font-weight: 500; font-size: 0.9rem;
+        display: inline-block;
+        padding: 0.6rem 1.5rem;
+        border-radius: 0.5rem;
+        background: var(--color-fg);
+        color: var(--color-bg);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: background 0.3s ease, color 0.3s ease, transform 0.15s;
+      }
+      a:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+      }
+      ::selection {
+        background: var(--color-accent);
+        color: #fff;
       }
     </style>
   </head>
@@ -32,11 +70,13 @@
       <a href="/">← 返回首页</a>
     </div>
     <script>
-      (function() {
-        const saved = localStorage.getItem('theme');
-        const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', saved || prefers);
-      })();
+      ;(function () {
+        const saved = localStorage.getItem('theme')
+        const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+        document.documentElement.setAttribute('data-theme', saved || prefers)
+      })()
     </script>
   </body>
 </html>

@@ -3,20 +3,32 @@ title: 快速开始
 description: 欢迎使用 Sage，本指南将帮助你快速上手。
 ---
 
-欢迎使用 Sage。本指南将帮助你快速上手。
-
----
+欢迎使用 Sage。
 
 ## 项目结构
 
 ```
-src/content/docs/         ← 文档内容（丢 .mdx 即可）
-├── _meta.ts              ← 侧边栏配置
-├── getting-started.mdx
-└── dev/
-    ├── _meta.ts
-    ├── architecture.mdx
-    └── api-reference.mdx
+src/
+├── components/
+│   └── SearchDialog.astro   ← 搜索对话框（可复用组件）
+├── content/docs/            ← 文档内容（丢 .mdx 即可）
+│   ├── _meta.ts             ← 侧边栏配置
+│   ├── getting-started.mdx
+│   └── dev/
+│       ├── architecture.mdx
+│       ├── api-reference.mdx
+│       └── secret.mdx
+├── layouts/
+│   └── DocsLayout.astro     ← 文档页布局
+├── lib/
+│   └── sidebar.ts           ← 侧边栏渲染（已测试）
+├── pages/
+│   ├── index.astro          ← 首页
+│   ├── 404.astro            ← 404
+│   └── docs/
+│       └── [...slug].astro  ← 文档路由
+└── styles/
+    └── tokens.css           ← 设计 Token（亮色/暗色，全局共享）
 ```
 
 ---
@@ -37,13 +49,39 @@ npm run dev
 
 Astro 会在 `http://localhost:4321` 启动热重载开发服务器。
 
+### 运行测试
+
+```bash
+npm test
+```
+
 ### 构建生产版本
 
 ```bash
 npm run build
 ```
 
-构建产物输出到 `dist/` 目录，为纯静态文件。
+构建产物输出到 `dist/` 目录，为纯静态文件。构建流程：Astro 编译 → Pagefind 搜索索引 → StatiCrypt 文档加密。
+
+---
+
+## 主题切换
+
+点击右下角浮动按钮或导航栏右侧的太阳/月亮图标切换亮色/暗色模式。
+
+特性：
+- 首次访问自动检测系统偏好（`prefers-color-scheme`）
+- 用户选择存入 `localStorage`，下次访问自动恢复
+- 所有颜色通过 CSS 自定义属性集中管理（`src/styles/tokens.css`）
+- 切换带 0.3s 平滑过渡动画
+
+---
+
+## 搜索
+
+按下 `Ctrl+K`（Mac: `Cmd+K`）呼出搜索对话框，或点击导航栏中的搜索按钮。
+
+搜索基于 [Pagefind](https://pagefind.app/)，构建时自动生成离线索引。
 
 ---
 
@@ -53,7 +91,7 @@ npm run build
 2. 在对应目录的 `_meta.ts` 中添加一行标题和路径
 3. 完成，无需其他操作
 
-```
+```bash
 # 1. 创建文件: src/content/docs/tutorial.mdx
 ---
 title: 教程
@@ -65,6 +103,27 @@ title: 教程
 # 2. 在 src/content/docs/_meta.ts 加一行:
 { label: '教程', slug: 'tutorial' }
 ```
+
+### _meta.ts 配置格式
+
+```ts
+// 单页
+{ label: '快速开始', slug: 'getting-started' }
+
+// 分组（可折叠）
+{
+  label: '开发指南',
+  slug: 'dev',              // 可选，用作 DOM id
+  items: [
+    { label: '架构设计', slug: 'dev/architecture' },
+    { label: '接口说明', slug: 'dev/api-reference' },
+  ],
+}
+```
+
+- `label` — 侧边栏显示名
+- `slug` — 文档路径（相对于 `src/content/docs/`）
+- MetaGroup 的 `slug` 可选，缺省自动从 `label` 生成
 
 ---
 
@@ -85,5 +144,5 @@ title: 教程
 | 斜体 | `*斜体*` |
 | 链接 | `[文字](url)` |
 | 图片 | `![alt](url)` |
-| 代码块 | ` ```语言 ` |
+| 代码块 | ` ```语言 `` ` |
 | 表格 | `\| 列1 \| 列2 \|` |

@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist && npx staticrypt dist/docs/dev/secret/index.html -p sage123 -d dist/docs/dev/secret/ --short -t src/staticrypt-template.html",
-    "encrypt": "staticrypt dist/docs/dev/secret/index.html -p sage123 -d dist/docs/dev/secret/ --short"
+    "encrypt": "staticrypt dist/docs/dev/secret/index.html -p sage123 -d dist/docs/dev/secret/ --short",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.4",
@@ -15,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
   }
 }
