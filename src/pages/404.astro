@@ -7,6 +7,9 @@ import '../styles/tokens.css'
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script is:inline>
+      (function(){var t=localStorage.getItem('theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)})();
+    </script>
     <title>404 | Sage</title>
     <style is:global>
       *,
@@ -70,13 +73,7 @@ import '../styles/tokens.css'
       <a href="/">← 返回首页</a>
     </div>
     <script>
-      ;(function () {
-        const saved = localStorage.getItem('theme')
-        const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light'
-        document.documentElement.setAttribute('data-theme', saved || prefers)
-      })()
+      // Theme already set in <head>; this page has no toggle, just confirm attribution
     </script>
   </body>
 </html>

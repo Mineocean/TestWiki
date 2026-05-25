@@ -19,6 +19,9 @@ const { title, description, sidebar, headings = [] } = Astro.props
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script is:inline>
+      (function(){var t=localStorage.getItem('theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)})();
+    </script>
     <title>{title} | Sage</title>
     {description && <meta name="description" content={description} />}
 
@@ -758,13 +761,9 @@ const { title, description, sidebar, headings = [] } = Astro.props
         }
       }
 
-      ;(function () {
-        const saved = localStorage.getItem('theme')
-        const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light'
-        applyTheme(saved || prefers)
-      })()
+      // Sync icons (theme already set in <head>)
+      const _t = document.documentElement.getAttribute('data-theme')
+      if (_t) applyTheme(_t)
 
       function toggleTheme() {
         const current = document.documentElement.getAttribute('data-theme')
