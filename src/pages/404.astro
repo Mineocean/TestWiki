@@ -1,79 +1,48 @@
 ---
-import '../styles/tokens.css'
+import BaseLayout from '../layouts/BaseLayout.astro'
 ---
 
-<!DOCTYPE html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script is:inline>
-      (function(){var t=localStorage.getItem('theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)})();
-    </script>
-    <title>404 | Sage</title>
-    <style is:global>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      html {
-        color-scheme: light dark;
-      }
-      body {
-        font-family: system-ui, -apple-system, sans-serif;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100dvh;
-        background: var(--color-bg);
-        color: var(--color-fg);
-        text-align: center;
-        transition: background 0.3s ease, color 0.3s ease;
-      }
-      h1 {
-        font-size: 5rem;
-        font-weight: 800;
-        margin: 0;
-        color: var(--color-muted);
-        opacity: 0.3;
-      }
-      p {
-        color: var(--color-muted);
-        margin: 0.5rem 0 1.5rem;
-        font-size: 1.1rem;
-      }
-      a {
-        display: inline-block;
-        padding: 0.6rem 1.5rem;
-        border-radius: 0.5rem;
-        background: var(--color-fg);
-        color: var(--color-bg);
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: background 0.3s ease, color 0.3s ease, transform 0.15s;
-      }
-      a:hover {
-        text-decoration: none;
-        transform: translateY(-1px);
-      }
-      ::selection {
-        background: var(--color-accent);
-        color: #fff;
-      }
-    </style>
-  </head>
-  <body>
-    <div>
-      <h1>404</h1>
-      <p>页面未找到</p>
-      <a href="/">← 返回首页</a>
-    </div>
-    <script>
-      // Theme already set in <head>; this page has no toggle, just confirm attribution
-    </script>
-  </body>
-</html>
+<BaseLayout title="404 | Sage">
+  <div class="error-container">
+    <h1>404</h1>
+    <p>页面未找到</p>
+    <a href="/">← 返回首页</a>
+  </div>
+
+  <style is:global>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      text-align: center;
+    }
+    .error-container h1 {
+      font-size: 5rem;
+      font-weight: 800;
+      margin: 0;
+      color: var(--color-muted);
+      opacity: 0.3;
+    }
+    .error-container p {
+      color: var(--color-muted);
+      margin: 0.5rem 0 1.5rem;
+      font-size: 1.1rem;
+    }
+    .error-container a {
+      display: inline-block;
+      padding: 0.6rem 1.5rem;
+      border-radius: 0.5rem;
+      background: var(--color-fg);
+      color: var(--color-bg);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: background 0.3s ease, color 0.3s ease, transform 0.15s;
+    }
+    .error-container a:hover {
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+  </style>
+</BaseLayout>

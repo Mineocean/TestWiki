@@ -1,15 +1,4 @@
-export interface MetaItem {
-  label: string
-  slug: string
-}
-
-export interface MetaGroup {
-  label: string
-  slug?: string
-  items: MetaItem[]
-}
-
-export type MetaEntry = MetaItem | MetaGroup
+import type { MetaEntry } from '../../lib/sidebar'
 
 const meta: MetaEntry[] = [
   { label: '快速开始', slug: 'getting-started' },

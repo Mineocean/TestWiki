@@ -6,7 +6,7 @@
     <input id="search-input" type="text" placeholder="搜索文档..." />
     <button class="search-close-btn" id="search-close" aria-label="关闭">&times;</button>
   </div>
-  <div id="search-results" style="max-height:400px;overflow-y:auto"></div>
+  <div id="search-results" class="search-results"></div>
   <div class="search-empty-state" id="search-empty">未找到结果</div>
 </div>
 
@@ -19,16 +19,22 @@
   const searchResults = document.getElementById('search-results')
   const searchEmpty = document.getElementById('search-empty')
 
+  function escapeHtml(str) {
+    const div = document.createElement('div')
+    div.textContent = str
+    return div.innerHTML
+  }
+
   function openSearch() {
     searchOverlay.style.display = 'block'
-    searchDialog.style.display = 'block'
+    searchDialog.classList.add('open-dialog')
     searchInput.focus()
     document.body.style.overflow = 'hidden'
   }
 
   function closeSearch() {
     searchOverlay.style.display = 'none'
-    searchDialog.style.display = 'none'
+    searchDialog.classList.remove('open-dialog')
     searchInput.value = ''
     searchResults.innerHTML = ''
     searchEmpty.style.display = 'none'
@@ -46,7 +52,6 @@
     if (e.key === 'Escape') closeSearch()
   })
 
-  // Expose for external triggers (e.g. navbar button)
   window._sageSearch = { open: openSearch, close: closeSearch }
 
   let pagefindInstance = null
@@ -78,9 +83,9 @@
       searchResults.innerHTML = results
         .map(
           (r) => `
-        <a href="${(r.url || '').replace(/\.html$/, '').replace(/\/index$/, '')}" class="search-result-item">
-          <div class="search-result-title">${r.meta.title}</div>
-          <div class="search-result-excerpt">${r.excerpt || ''}</div>
+        <a href="${escapeHtml((r.url || '').replace(/\.html$/, '').replace(/\/index$/, ''))}" class="search-result-item">
+          <div class="search-result-title">${escapeHtml(r.meta.title || '')}</div>
+          <div class="search-result-excerpt">${escapeHtml(r.excerpt || '')}</div>
         </a>
       `,
         )

@@ -2,6 +2,17 @@
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import topMeta from '../../content/docs/_meta'
 
+interface MdxFrontmatter {
+  title: string
+  description?: string
+}
+
+interface MdxModule {
+  frontmatter: MdxFrontmatter
+  default: any
+  getHeadings: () => { depth: number; slug: string; text: string }[]
+}
+
 export async function getStaticPaths() {
   const docs = import.meta.glob('../../content/docs/**/*.mdx')
   return Object.keys(docs).map((filePath) => {
@@ -12,7 +23,7 @@ export async function getStaticPaths() {
 
 const { slug } = Astro.props as { slug: string }
 
-const modules = import.meta.glob<{ frontmatter: { title: string; description?: string }; default: any }>(
+const modules = import.meta.glob<MdxModule>(
   '../../content/docs/**/*.mdx',
   { eager: true }
 )
@@ -21,6 +32,7 @@ const filePath = `../../content/docs/${slug}.mdx`
 const module = modules[filePath]
 const title = module?.frontmatter?.title || slug.replace(/^.*\//, '')
 const description = module?.frontmatter?.description
+const headings = module?.getHeadings?.() || []
 const Content = module?.default
 ---
 
@@ -28,7 +40,7 @@ const Content = module?.default
   title={title}
   description={description}
   sidebar={topMeta}
-  headings={[]}
+  headings={headings}
 >
   {Content && <Content />}
 </DocsLayout>
