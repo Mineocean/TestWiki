@@ -9,6 +9,15 @@ import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
 
+// Mirror scripts/encrypt.mjs: a gitignored .env is enough.
+if (!process.env.STATICRYPT_PASSWORD) {
+  try {
+    process.loadEnvFile('.env')
+  } catch {
+    // no .env — the decryption round-trip is skipped below
+  }
+}
+
 const PROTECTED_PAGE = 'dist/docs/dev/secret/index.html'
 const SECRET_MARKERS = ['sk-prod-zzzzz', 'sk-dev-xxxxx', 'api.example.internal']
 

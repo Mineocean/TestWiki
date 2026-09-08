@@ -9,6 +9,15 @@ import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
 
+// A gitignored .env is enough; CI can also pass a real environment variable.
+if (!process.env.STATICRYPT_PASSWORD) {
+  try {
+    process.loadEnvFile('.env')
+  } catch {
+    // no .env — handled by the check below
+  }
+}
+
 const target = 'dist/docs/dev/secret/index.html'
 const outputDirectory = 'dist/docs/dev/secret/'
 const template = 'src/staticrypt-template.html'
