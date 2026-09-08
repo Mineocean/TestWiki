@@ -10,16 +10,18 @@ description: 欢迎使用 Sage，本指南将帮助你快速上手。
 ```
 src/
 ├── components/
-│   └── SearchDialog.astro   ← 搜索对话框（可复用组件）
+│   ├── SearchDialog.astro   ← 搜索对话框（Pagefind 懒加载）
+│   └── ThemeInit.astro      ← 主题初始化 + [data-theme-toggle] 绑定
 ├── content/docs/            ← 文档内容（丢 .mdx 即可）
-│   ├── _meta.ts             ← 侧边栏配置
+│   ├── _meta.ts             ← 侧边栏配置（仅顶层这一个）
 │   ├── getting-started.mdx
 │   └── dev/
 │       ├── architecture.mdx
 │       ├── api-reference.mdx
-│       └── secret.mdx
+│       └── secret.mdx       ← 加密文档
 ├── layouts/
-│   └── DocsLayout.astro     ← 文档页布局
+│   ├── BaseLayout.astro     ← 全站外壳（head / 主题 / 搜索 / 浮动按钮）
+│   └── DocsLayout.astro     ← 文档页布局（复用 BaseLayout）
 ├── lib/
 │   └── sidebar.ts           ← 侧边栏渲染（已测试）
 ├── pages/
@@ -27,8 +29,11 @@ src/
 │   ├── 404.astro            ← 404
 │   └── docs/
 │       └── [...slug].astro  ← 文档路由
-└── styles/
-    └── tokens.css           ← 设计 Token（亮色/暗色，全局共享）
+├── styles/
+│   └── tokens.css           ← 设计 Token（亮色/暗色，全局共享）
+└── staticrypt-template.html ← 加密页模板
+scripts/
+└── encrypt.mjs              ← 构建期加密步骤
 ```
 
 ---
@@ -55,13 +60,23 @@ Astro 会在 `http://localhost:4321` 启动热重载开发服务器。
 npm test
 ```
 
+### 类型检查
+
+```bash
+npm run typecheck
+```
+
 ### 构建生产版本
 
 ```bash
+# 加密密码从环境变量读取，仓库里不保存明文
+echo "STATICRYPT_PASSWORD='your-long-password'" > .env
 npm run build
 ```
 
-构建产物输出到 `dist/` 目录，为纯静态文件。构建流程：Astro 编译 → Pagefind 搜索索引 → StatiCrypt 文档加密。
+构建产物输出到 `dist/` 目录，为纯静态文件。构建流程：Astro 编译 → StatiCrypt 加密 → Pagefind 搜索索引。
+
+顺序不能颠倒：**先加密再建索引**，否则 Pagefind 会把待加密页面的明文写进搜索索引分片。
 
 ---
 
@@ -70,10 +85,13 @@ npm run build
 点击右下角浮动按钮或导航栏右侧的太阳/月亮图标切换亮色/暗色模式。
 
 特性：
+- 首屏前由 inline 脚本写入 `<html data-theme>`，无闪烁
 - 首次访问自动检测系统偏好（`prefers-color-scheme`）
 - 用户选择存入 `localStorage`，下次访问自动恢复
-- 所有颜色通过 CSS 自定义属性集中管理（`src/styles/tokens.css`）
-- 切换带 0.3s 平滑过渡动画
+- 所有颜色通过 CSS 自定义属性集中管理（`src/styles/tokens.css`，40 个变量）
+- 切换带 0.3s 平滑过渡动画，`prefers-reduced-motion` 下自动关闭
+
+新增按钮只需加 `data-theme-toggle` 属性，并在按钮内放 `.theme-icon-sun` 与 `.theme-icon-moon` 两个图标。
 
 ---
 
@@ -81,15 +99,19 @@ npm run build
 
 按下 `Ctrl+K`（Mac: `Cmd+K`）呼出搜索对话框，或点击导航栏中的搜索按钮。
 
-搜索基于 [Pagefind](https://pagefind.app/)，构建时自动生成离线索引。
+搜索基于 [Pagefind](https://pagefind.app/)，索引由 `npm run build` 生成，浏览器端按需加载 `/pagefind/pagefind.js`。
+
+因为索引只在构建产物里，`npm run dev` 下搜索会提示"搜索索引不可用"，属预期行为。
+
+索引只收录带 `data-pagefind-body` 的页面（当前是 `<main>`），所以导航栏、侧边栏、目录不会污染搜索结果；加密页没有该标记，也不会被索引。
 
 ---
 
 ## 添加新文档
 
-1. 在 `src/content/docs/` 目录创建 `.mdx` 文件
-2. 在对应目录的 `_meta.ts` 中添加一行标题和路径
-3. 完成，无需其他操作
+1. 在 `src/content/docs/` 目录创建 `.mdx` 文件（可以放子目录）
+2. 在 `src/content/docs/_meta.ts` 中添加一行标题和路径
+3. 完成，构建后自动生效
 
 ```bash
 # 1. 创建文件: src/content/docs/tutorial.mdx
@@ -122,14 +144,16 @@ title: 教程
 ```
 
 - `label` — 侧边栏显示名
-- `slug` — 文档路径（相对于 `src/content/docs/`）
-- MetaGroup 的 `slug` 可选，缺省自动从 `label` 生成
+- `slug` — 文档路径（相对于 `src/content/docs/`，不含 `.mdx`）
+- MetaGroup 的 `slug` 可选，缺省自动从 `label` 生成；重名会自动追加序号
+
+> 侧边栏只有一个顶层 `_meta.ts`：子目录不会各自生成导航。路由与 `_meta.ts` 相互独立——没有登记到侧边栏的 `.mdx` 依然可以访问，只是不出现在导航里。
 
 ---
 
 ## 部署
 
-- **Vercel**: 自动检测 Astro
+- **Vercel**: 自动检测 Astro（需配置 `STATICRYPT_PASSWORD` 环境变量）
 - **Netlify**: Build `npm run build`, Publish `dist`
 - **Cloudflare Pages**: Build `npm run build`, Output `dist`
 
@@ -144,5 +168,5 @@ title: 教程
 | 斜体 | `*斜体*` |
 | 链接 | `[文字](url)` |
 | 图片 | `![alt](url)` |
-| 代码块 | ` ```语言 `` ` |
+| 代码块 | ` \`\`\`语言 ` |
 | 表格 | `\| 列1 \| 列2 \|` |

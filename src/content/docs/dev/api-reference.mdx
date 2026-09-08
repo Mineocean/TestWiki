@@ -3,7 +3,7 @@ title: 接口说明
 description: 站点配置与接口说明。
 ---
 
-> Astro Content Collections 驱动的文档站点。以下说明涵盖配置方式。
+> Astro + `import.meta.glob` 驱动的文档站点。以下说明涵盖配置方式。
 
 ---
 
@@ -15,15 +15,16 @@ description: 站点配置与接口说明。
 | `/docs/getting-started` | 快速开始 |
 | `/docs/dev/architecture` | 架构设计 |
 | `/docs/dev/api-reference` | 接口说明（本页） |
+| `/docs/dev/secret` | 机密文档（构建后为密码页） |
 
 ---
 
 ## _meta.ts 配置
 
-每个目录下的 `_meta.ts` 定义侧边栏：
+顶层 `src/content/docs/_meta.ts` 定义侧边栏：
 
 ```ts
-import type { MetaEntry } from '../_meta'
+import type { MetaEntry } from '../../lib/sidebar'
 
 const meta: MetaEntry[] = [
   { label: '架构设计', slug: 'dev/architecture' },
@@ -38,16 +39,19 @@ export default meta
 ```ts
 interface MetaItem {
   label: string   // 侧边栏显示名
-  slug: string    // 对应的文档路径
+  slug: string    // 对应的文档路径（相对 src/content/docs/，不含 .mdx）
 }
 
 interface MetaGroup {
   label: string        // 分组标题
+  slug?: string        // 可选，用作 DOM id；缺省从 label 生成
   items: MetaItem[]    // 分组下的子项
 }
 
 type MetaEntry = MetaItem | MetaGroup
 ```
+
+`label` 与 `slug` 在渲染时会做 HTML 转义；分组 DOM id 冲突时自动追加序号。
 
 ---
 
@@ -62,12 +66,20 @@ description: 可选描述（SEO）
 ---
 ```
 
-无需指定 layout——由 `[...slug].astro` 统一处理。
+无需指定 layout——由 `[...slug].astro` 统一交给 `DocsLayout` 处理。
+
+---
+
+## 环境变量
+
+| 变量 | 用途 |
+|------|------|
+| `STATICRYPT_PASSWORD` | 加密 `docs/dev/secret` 的密码，构建时必填（`.env` 或 CI secret） |
 
 ---
 
 ## 添加流程
 
 1. 在对应目录创建 `.mdx`
-2. 在 `_meta.ts` 加一行配置
+2. 在 `src/content/docs/_meta.ts` 加一行配置
 3. 完成，构建后自动生效

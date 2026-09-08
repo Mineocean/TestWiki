@@ -12,7 +12,7 @@ describe('renderSidebar', () => {
     expect(html).toContain('快速开始')
     expect(html).toContain('href="/docs/getting-started"')
     expect(html).toContain('sidebar-item')
-    expect(html).toContain('font-weight:500')
+    expect(html).toContain('sidebar-item-standalone')
   })
 
   it('renders a MetaGroup with collapsible items and slug-based DOM id', () => {
@@ -79,5 +79,51 @@ describe('renderSidebar', () => {
     expect(html).toContain('href="/docs/home"')
     expect(html).toContain('data-group="guides"')
     expect(html).toContain('href="/docs/guides/intro"')
+  })
+
+  it('makes group titles keyboard-operable toggle buttons', () => {
+    const entries: MetaEntry[] = [
+      { label: '指南', slug: 'guides', items: [{ label: '入门', slug: 'guides/intro' }] },
+    ]
+
+    const html = renderSidebar(entries)
+
+    expect(html).toContain('<button type="button" class="sidebar-group-title"')
+    expect(html).toContain('aria-expanded="true"')
+    expect(html).toContain('aria-controls="group-guides"')
+  })
+
+  it('escapes labels and slugs instead of injecting markup', () => {
+    const entries: MetaEntry[] = [
+      { label: '<script>alert(1)</script>', slug: 'x" onmouseover="alert(1)' },
+      {
+        label: '<img src=x onerror=alert(1)>',
+        slug: 'bad',
+        items: [{ label: '</a><b>bold</b>', slug: 'bad/item' }],
+      },
+    ]
+
+    const html = renderSidebar(entries)
+
+    expect(html).not.toContain('<script>')
+    expect(html).not.toContain('<img')
+    expect(html).not.toContain('onmouseover="alert(1)"')
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
+    expect(html).toContain('&quot;')
+    expect(html).toContain('&lt;/a&gt;&lt;b&gt;bold&lt;/b&gt;')
+  })
+
+  it('gives colliding group slugs distinct DOM ids', () => {
+    const entries: MetaEntry[] = [
+      { label: 'A', slug: 'same', items: [{ label: 'a', slug: 'a' }] },
+      { label: 'B', slug: 'same', items: [{ label: 'b', slug: 'b' }] },
+    ]
+
+    const html = renderSidebar(entries)
+
+    expect(html).toContain('id="group-same"')
+    expect(html).toContain('id="group-same-2"')
+    expect(html).toContain('data-group="same"')
+    expect(html).toContain('data-group="same-2"')
   })
 })

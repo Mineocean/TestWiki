@@ -6,7 +6,9 @@ description: 了解项目技术栈与整体架构。
 ## 技术栈
 
 - **框架**: Astro 6
-- **内容**: MDX（Content Collections）
+- **内容**: MDX（`import.meta.glob` 路由 + `_meta.ts` 侧边栏）
+- **搜索**: Pagefind（构建期索引）
+- **加密**: StatiCrypt（客户端 AES，单页）
 - **构建**: SSG → `dist/`
 - **部署**: Vercel / Netlify / Cloudflare Pages
 
@@ -22,43 +24,54 @@ description: 了解项目技术栈与整体架构。
 │  ┌──────────────────────────┐   │
 │  │  dist/                   │   │
 │  │  ├── index.html          │   │
-│  │  ├── docs/getting-started│   │
-│  │  └── docs/dev/           │   │
+│  │  ├── pagefind/           │   │  ← 全文索引
+│  │  └── docs/               │   │
 │  └──────────────────────────┘   │
 └─────────────────────────────────┘
 ```
 
 ## 内容管理
 
-采用 **文件夹即层级** 模式：
+采用 **文件夹即层级** 模式，slug 就是相对 `src/content/docs/` 的路径：
 
 ```
 src/content/docs/          → /docs/
 ├── getting-started.mdx    → /docs/getting-started
 └── dev/                   → /docs/dev/
     ├── architecture.mdx   → /docs/dev/architecture
-    └── api-reference.mdx  → /docs/dev/api-reference
+    ├── api-reference.mdx  → /docs/dev/api-reference
+    └── secret.mdx         → /docs/dev/secret（构建后为密码页）
 ```
 
-每个目录下的 `_meta.ts` 定义该层级的侧边栏：
+侧边栏由**唯一的** `src/content/docs/_meta.ts` 定义：
 
 ```ts
 // src/content/docs/_meta.ts
-export default [
+const meta: MetaEntry[] = [
   { label: '快速开始', slug: 'getting-started' },
   {
     label: '开发指南',
+    slug: 'dev',
     items: [
       { label: '架构设计', slug: 'dev/architecture' },
       { label: '接口说明', slug: 'dev/api-reference' },
     ],
   },
 ]
+
+export default meta
 ```
 
 ## 构建流程
 
-1. `.mdx` → Astro Content Collections 自动识别
-2. `[...slug].astro` 按 slug 匹配对应文档
-3. `_meta.ts` → 自动生成侧边栏导航
-4. MDX → 静态 HTML
+1. `astro build` — `.mdx` 经 `src/pages/docs/[...slug].astro` 的 `import.meta.glob` 渲染为静态 HTML
+2. `node scripts/encrypt.mjs` — StatiCrypt 用 `STATICRYPT_PASSWORD` 加密 `dist/docs/dev/secret/index.html`
+3. `pagefind --site dist` — 只索引带 `data-pagefind-body` 的页面（加密页已被替换，且没有该标记）
+
+## 加密的边界
+
+StatiCrypt 是**客户端**加密：密文、盐、解密脚本都在静态文件里，密码正确时由浏览器本地解密。它能挡住直接抓取产物的读者，但不是访问控制：
+
+- `src/content/docs/dev/secret.mdx` 在仓库里始终是明文
+- 密码只存在于构建环境（`.env` / CI secret），仓库里不保存
+- 加密必须发生在 Pagefind 索引之前，否则明文会进索引

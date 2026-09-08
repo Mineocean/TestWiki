@@ -1,5 +1,6 @@
 ---
 import ThemeInit from '../components/ThemeInit.astro'
+import SearchDialog from '../components/SearchDialog.astro'
 import '../styles/tokens.css'
 
 export interface Props {
@@ -20,6 +21,9 @@ const { title, description } = Astro.props
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <style is:global>
+      /* ═══════════════════════════════════════════════════
+         Base (shared by every page; tokens → tokens.css)
+         ═══════════════════════════════════════════════════ */
       *,
       *::before,
       *::after {
@@ -28,13 +32,16 @@ const { title, description } = Astro.props
         padding: 0;
       }
       html {
-        color-scheme: light dark;
+        scroll-behavior: smooth;
+        overflow-x: hidden;
       }
       body {
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
         background: var(--color-bg);
         color: var(--color-fg);
         line-height: 1.7;
+        min-height: 100vh;
+        overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
         transition: background 0.3s ease, color 0.3s ease;
       }
@@ -50,10 +57,199 @@ const { title, description } = Astro.props
         background: var(--color-accent);
         color: #fff;
       }
+      :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+      }
+
+      /* ── Theme toggle icons (visibility is pure CSS, so there is no flash) ── */
+      .theme-icon-moon {
+        display: none;
+      }
+      [data-theme='dark'] .theme-icon-sun {
+        display: none;
+      }
+      [data-theme='dark'] .theme-icon-moon {
+        display: block;
+      }
+
+      /* ── Floating theme toggle ── */
+      #theme-toggle {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 0.85rem;
+        border: 1px solid var(--color-border);
+        background: var(--color-surface-raised);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-muted);
+        z-index: 10;
+        box-shadow: var(--shadow-toggle);
+        transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease,
+          box-shadow 0.3s ease, transform 0.15s;
+      }
+      #theme-toggle:hover {
+        color: var(--color-fg);
+        border-color: var(--color-accent);
+      }
+      #theme-toggle:active {
+        transform: scale(0.92);
+      }
+      #theme-toggle svg {
+        transition: transform 0.3s ease, opacity 0.2s ease;
+      }
+
+      /* ═══════════════════════════════════════════════════
+         Search Dialog (shared; rendered by SearchDialog.astro)
+         ═══════════════════════════════════════════════════ */
+      #search-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: var(--color-overlay);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+      #search-dialog {
+        display: none;
+        position: fixed;
+        top: 15%;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 101;
+        width: calc(100vw - 2rem);
+        max-width: 520px;
+        background: var(--color-search-bg);
+        border: 1px solid var(--color-border);
+        border-radius: 0.85rem;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        transition: background 0.3s ease, border-color 0.3s ease;
+      }
+      #search-dialog.open-dialog {
+        display: block;
+      }
+      .search-results {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      @media (max-width: 640px) {
+        #search-dialog {
+          top: 5%;
+          max-height: 80vh;
+        }
+        #search-dialog.open-dialog {
+          display: flex;
+          flex-direction: column;
+        }
+        .search-results {
+          flex: 1;
+          overflow-y: auto;
+        }
+      }
+      .search-header {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--color-border);
+        gap: 0.5rem;
+        transition: border-color 0.3s ease;
+      }
+      .search-header:focus-within {
+        border-color: var(--color-accent);
+      }
+      .search-header svg {
+        flex-shrink: 0;
+        color: var(--color-muted);
+      }
+      .search-header input {
+        flex: 1;
+        border: none;
+        border-radius: 0.35rem;
+        font-size: 1rem;
+        padding: 0.25rem 0.5rem;
+        font-family: inherit;
+        background: transparent;
+        color: var(--color-fg);
+        transition: color 0.3s ease;
+      }
+      .search-header input::placeholder {
+        color: var(--color-muted);
+      }
+      .search-close-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        color: var(--color-muted);
+        font-size: 1.25rem;
+        line-height: 1;
+        border-radius: 0.35rem;
+        transition: background 0.15s, color 0.15s;
+      }
+      .search-close-btn:hover {
+        background: var(--color-code-bg);
+      }
+      .search-result-item {
+        display: block;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--color-border-light);
+        color: inherit;
+        text-decoration: none;
+        transition: background 0.1s, border-color 0.3s ease;
+      }
+      .search-result-item:hover,
+      .search-result-item:focus {
+        background: var(--color-search-hover);
+        text-decoration: none;
+      }
+      .search-result-title {
+        font-weight: 600;
+        margin-bottom: 0.15rem;
+        font-size: 0.875rem;
+        color: var(--color-fg);
+      }
+      .search-result-excerpt {
+        font-size: 0.8rem;
+        color: var(--color-muted);
+        line-height: 1.5;
+      }
+      .search-empty-state {
+        display: none;
+        padding: 2.5rem 1rem;
+        text-align: center;
+        color: var(--color-muted);
+        font-size: 0.875rem;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
-    <slot name="head" />
   </head>
   <body>
     <slot />
+
+    <button id="theme-toggle" data-theme-toggle type="button" aria-label="切换主题" aria-pressed="false">
+      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+
+    <SearchDialog />
   </body>
 </html>

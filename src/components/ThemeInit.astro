@@ -1,5 +1,41 @@
 ---
+// Theme bootstrap. The inline script runs before first paint (no dark-mode
+// flash); the module script wires up every [data-theme-toggle] button.
 ---
+
 <script is:inline>
-  (function(){var t=localStorage.getItem('theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)})();
+  (function () {
+    var t = localStorage.getItem('theme')
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    document.documentElement.setAttribute('data-theme', t)
+  })()
+</script>
+
+<script>
+  const THEME_LABELS = {
+    dark: '切换到亮色模式',
+    light: '切换到暗色模式',
+  }
+
+  function syncThemeButtons() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const label = isDark ? THEME_LABELS.dark : THEME_LABELS.light
+    document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+      button.setAttribute('aria-label', label)
+      button.setAttribute('title', label)
+      button.setAttribute('aria-pressed', String(isDark))
+    })
+  }
+
+  syncThemeButtons()
+
+  document.addEventListener('click', (event) => {
+    const target = event.target
+    const button = target instanceof Element ? target.closest('[data-theme-toggle]') : null
+    if (!button) return
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('theme', next)
+    syncThemeButtons()
+  })
 </script>
