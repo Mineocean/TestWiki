@@ -1,196 +1,85 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro'
+import DocsLayout from '../layouts/DocsLayout.astro'
+import Icon from '../components/Icon.astro'
+import sidebar from '../content/docs/_meta'
+
+const docs = sidebar.flatMap((entry) => 'items' in entry ? entry.items : [entry])
+const descriptions = import.meta.glob<{ description?: string }>('../content/docs/**/*.mdx', {
+  eager: true,
+  import: 'frontmatter',
+})
 ---
 
-<BaseLayout title="Sage" description="Sage — 基于 Astro 的轻量级文档站点">
-  <main data-pagefind-body>
-    <div class="hero">
-      <h1>Markdown <span class="accent">Sage</span></h1>
-      <p class="tagline">轻量级文档站点 · 纯静态 · Astro 驱动</p>
-      <div class="actions">
-        <a href="/docs/getting-started" class="btn btn-primary">
-          快速开始
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-        </a>
-        <a href="/docs/dev/architecture" class="btn btn-outline">
-          开发指南
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        </a>
-        <a href="https://github.com/Mineocean/TestWiki" target="_blank" rel="noreferrer" class="btn btn-outline btn-icon" title="GitHub">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
-            <path d="M9 18c-4.51 2-5-2-7-2"/>
-          </svg>
-        </a>
-      </div>
+<DocsLayout title="Sage" description="基于 Astro 的轻量级文档站点" sidebar={sidebar} home>
+  <div class="home-intro">
+    <img src="/sage.svg" alt="" width="72" height="72" />
+    <h1>Markdown Sage</h1>
+    <p>基于 Astro 的轻量级文档站点。用 Markdown 编写文档，通过全文搜索快速查找内容。</p>
+  </div>
+
+  <section class="home-section" aria-labelledby="browse-docs">
+    <h2 id="browse-docs">浏览文档</h2>
+    <ul class="document-list">
+      {docs.map(({ label, slug }) => {
+        const locked = slug === 'dev/secret'
+        const description = descriptions['../content/docs/' + slug + '.mdx']?.description
+        return (
+          <li>
+            <a class="block-row document-link" href={'/docs/' + slug}>
+              <span class="document-icon"><Icon name={locked ? 'lock' : 'file'} /></span>
+              <span class="document-link-text">
+                <strong>{label}</strong>
+                {description && <span class="document-summary">{description}</span>}
+              </span>
+              <Icon class="document-arrow" name="arrow" />
+            </a>
+          </li>
+        )
+      })}
+    </ul>
+  </section>
+
+  <section class="home-section" aria-labelledby="about-sage">
+    <h2 id="about-sage">关于 Sage</h2>
+    <div class="home-callout">
+      <Icon name="info" />
+      <p>Sage 将 MDX 构建为静态页面，提供可折叠的文档导航与自动高亮的页面目录。构建产物可部署到 Cloudflare Pages、Vercel 或 Netlify。</p>
     </div>
+  </section>
+</DocsLayout>
 
-    <section class="features">
-      <div class="card">
-        <span class="card-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        </span>
-        <h3>零 JS 默认</h3>
-        <p>Astro 默认输出纯静态 HTML+CSS，仅在需要交互时添加少量 JS，首屏几乎瞬时加载。</p>
-      </div>
-      <div class="card">
-        <span class="card-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        </span>
-        <h3>智能导航</h3>
-        <p>可折叠侧边栏 + 滚动高亮目录，助你快速定位目标内容。</p>
-      </div>
-      <div class="card">
-        <span class="card-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
-        </span>
-        <h3>一键部署</h3>
-        <p>输出纯静态文件，可直接部署到 Vercel、Netlify、Cloudflare Pages 等平台。</p>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <p>Powered by Astro · Deploy anywhere</p>
-    </footer>
-  </main>
-
-  <style is:global>
-    .hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      min-height: 100dvh;
-      padding: 4rem 2rem;
-      position: relative;
-    }
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--color-hero-gradient);
-    }
-    .hero > * {
-      position: relative;
-      z-index: 1;
-    }
-    h1 {
-      font-size: clamp(2.8rem, 7vw, 4rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      background: linear-gradient(
-        180deg,
-        var(--color-h1-gradient-from) 0%,
-        var(--color-h1-gradient-mid) 50%,
-        var(--color-h1-gradient-to) 100%
-      );
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    h1 .accent {
-      -webkit-text-fill-color: var(--color-accent);
-    }
-    .tagline {
-      font-size: 1.2rem;
-      color: var(--color-muted);
-      margin-top: 1rem;
-      font-weight: 400;
-    }
-    .actions {
-      margin-top: 2.25rem;
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.7rem 1.75rem;
-      border-radius: 0.75rem;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .btn:hover {
-      text-decoration: none;
-    }
-    .btn-icon {
-      padding: 0.7rem;
-    }
-    .btn-primary {
-      background: var(--color-btn-primary-bg);
-      color: var(--color-btn-primary-fg);
-      border: none;
-      transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
-    }
-    .btn-primary:hover {
-      background: var(--color-btn-primary-hover);
-      transform: translateY(-1px);
-    }
-    .btn-outline {
-      border: 1px solid var(--color-border);
-      background: var(--color-btn-outline-bg);
-      color: var(--color-btn-outline-fg);
-      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease,
-        transform 0.2s ease;
-    }
-    .btn-outline:hover {
-      background: var(--color-btn-outline-hover-bg);
-      border-color: var(--color-btn-outline-hover-border);
-      transform: translateY(-1px);
-    }
-    .features {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 0 1.5rem 4rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.25rem;
-    }
-    .card {
-      padding: 1.5rem;
-      border-radius: 0.85rem;
-      border: 1px solid var(--color-border);
-      background: var(--color-card-bg);
-      transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.3s ease;
-    }
-    .card:hover {
-      box-shadow: var(--color-card-hover-shadow);
-      border-color: var(--color-card-hover-border);
-    }
-    .card-icon {
-      width: 1.75rem;
-      height: 1.75rem;
-      margin-bottom: 0.75rem;
-      display: block;
-      color: var(--color-accent);
-    }
-    .card h3 {
-      font-size: 1.05rem;
-      font-weight: 650;
-      margin-bottom: 0.4rem;
-      color: var(--color-fg);
-    }
-    .card p {
-      font-size: 0.875rem;
-      color: var(--color-muted);
-      line-height: 1.6;
-    }
-    .footer {
-      text-align: center;
-      padding: 2.5rem 2rem;
-      font-size: 0.85rem;
-      color: var(--color-muted);
-      border-top: 1px solid var(--color-border);
-      transition: border-color 0.3s ease, color 0.3s ease;
-    }
-  </style>
-
-</BaseLayout>
+<style>
+  .home-intro img { display: block; margin: 0 0 var(--spacing-16) -11px; }
+  .home-intro p {
+    margin-top: var(--spacing-12);
+    color: var(--color-muted);
+    font-size: var(--text-body-lg);
+  }
+  .home-section { margin-top: var(--spacing-48); }
+  .home-section h2 { margin-bottom: var(--spacing-12); }
+  .document-list { margin: 0; padding: 0; list-style: none; }
+  .document-list li { border-top: 1px solid var(--color-hairline); }
+  .document-list li:last-child { border-bottom: 1px solid var(--color-hairline); }
+  .document-link { padding-block: var(--spacing-8); gap: var(--spacing-12); min-height: 54px; }
+  .document-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 28px;
+    height: 28px;
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius);
+    color: var(--color-muted);
+  }
+  .document-link-text { flex: 1; min-width: 0; }
+  .document-summary { display: block; color: var(--color-muted); font-size: 13px; }
+  .document-link :global(.document-arrow) { flex: none; color: var(--color-muted); }
+  .home-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-8);
+    padding: var(--spacing-12) var(--spacing-16);
+    border-radius: var(--radius);
+    background: var(--color-hover-grey);
+  }
+  .home-callout :global(svg) { flex: none; margin-top: 3px; color: var(--color-muted); }
+</style>

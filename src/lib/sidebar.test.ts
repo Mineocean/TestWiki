@@ -88,7 +88,7 @@ describe('renderSidebar', () => {
 
     const html = renderSidebar(entries)
 
-    expect(html).toContain('<button type="button" class="sidebar-group-title"')
+    expect(html).toContain('<button type="button" class="sidebar-group-title block-row"')
     expect(html).toContain('aria-expanded="true"')
     expect(html).toContain('aria-controls="group-guides"')
   })
@@ -125,5 +125,25 @@ describe('renderSidebar', () => {
     expect(html).toContain('id="group-same-2"')
     expect(html).toContain('data-group="same"')
     expect(html).toContain('data-group="same-2"')
+  })
+
+  it('keeps generated ids unique when an explicit slug already has the suffix', () => {
+    const entries: MetaEntry[] = [
+      { label: 'A', slug: 'same', items: [] },
+      { label: 'B', slug: 'same-2', items: [] },
+      { label: 'C', slug: 'same', items: [] },
+    ]
+
+    expect(renderSidebar(entries)).toContain('aria-controls="group-same-3"')
+  })
+
+  it('marks only the exact current document as selected', () => {
+    const html = renderSidebar([
+      { label: 'Guide', slug: 'guide' },
+      { label: 'Details', slug: 'guide/details' },
+    ], '/docs/guide/details')
+
+    expect(html).toContain('aria-current="page">Details')
+    expect(html).not.toContain('aria-current="page">Guide')
   })
 })

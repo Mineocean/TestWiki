@@ -1,172 +1,85 @@
 ---
 title: 快速开始
-description: 欢迎使用 Sage，本指南将帮助你快速上手。
+description: 安装依赖、启动开发服务并发布你的第一篇文档。
 ---
-
-欢迎使用 Sage。
 
 ## 项目结构
 
-```
+```text
+public/                     站点标志、共享样式与主题脚本
 src/
-├── components/
-│   ├── SearchDialog.astro   ← 搜索对话框（Pagefind 懒加载）
-│   └── ThemeInit.astro      ← 主题初始化 + [data-theme-toggle] 绑定
-├── content/docs/            ← 文档内容（丢 .mdx 即可）
-│   ├── _meta.ts             ← 侧边栏配置（仅顶层这一个）
-│   ├── getting-started.mdx
-│   └── dev/
-│       ├── architecture.mdx
-│       ├── api-reference.mdx
-│       └── secret.mdx       ← 加密文档
-├── layouts/
-│   ├── BaseLayout.astro     ← 全站外壳（head / 主题 / 搜索 / 浮动按钮）
-│   └── DocsLayout.astro     ← 文档页布局（复用 BaseLayout）
-├── lib/
-│   └── sidebar.ts           ← 侧边栏渲染（已测试）
-├── pages/
-│   ├── index.astro          ← 首页
-│   ├── 404.astro            ← 404
-│   └── docs/
-│       └── [...slug].astro  ← 文档路由
-├── styles/
-│   └── tokens.css           ← 设计 Token（亮色/暗色，全局共享）
-└── staticrypt-template.html ← 加密页模板
-scripts/
-└── encrypt.mjs              ← 构建期加密步骤
+├── components/             工具栏、搜索对话框与文档表格
+├── content/docs/           MDX 文档及导航配置 _meta.ts
+├── layouts/                全站布局与文档布局
+├── lib/                    文档导航与单元测试
+├── pages/                  首页、文档路由和 404
+└── staticrypt-template.html 密码页模板
+scripts/                    构建期加密与产物检查
 ```
-
----
 
 ## 本地开发
 
-### 安装依赖
+使用仓库 `.node-version` 指定的 Node.js 版本，在根目录运行：
 
-```bash
-npm install
-```
-
-### 启动开发服务器
-
-```bash
+```powershell
+npm ci
 npm run dev
 ```
 
-Astro 会在 `http://localhost:4321` 启动热重载开发服务器。
+Astro 会在 `http://localhost:4321` 启动开发服务。修改 MDX 后，可在浏览器中查看更新。
 
-### 运行测试
+### 检查代码
 
-```bash
+```powershell
+npm run typecheck
 npm test
 ```
 
-### 类型检查
+### 构建并预览
 
-```bash
-npm run typecheck
-```
+在本地 `.env` 中设置 `STATICRYPT_PASSWORD`，然后运行：
 
-### 构建生产版本
-
-```bash
-# 加密密码从环境变量读取，仓库里不保存明文
-echo "STATICRYPT_PASSWORD='your-long-password'" > .env
+```powershell
 npm run build
+npm run preview
 ```
 
-构建产物输出到 `dist/` 目录，为纯静态文件。构建流程：Astro 编译 → StatiCrypt 加密 → Pagefind 搜索索引。
-
-顺序不能颠倒：**先加密再建索引**，否则 Pagefind 会把待加密页面的明文写进搜索索引分片。
-
----
+生产文件写入 `dist/`。构建先生成静态页面，再加密受保护文档，随后建立搜索索引并检查产物。请使用构建预览验证搜索和解密。
 
 ## 主题切换
 
-点击右下角浮动按钮或导航栏右侧的太阳/月亮图标切换亮色/暗色模式。
-
-特性：
-- 首屏前由 inline 脚本写入 `<html data-theme>`，无闪烁
-- 首次访问自动检测系统偏好（`prefers-color-scheme`）
-- 用户选择存入 `localStorage`，下次访问自动恢复
-- 所有颜色通过 CSS 自定义属性集中管理（`src/styles/tokens.css`，40 个变量）
-- 切换带 0.3s 平滑过渡动画，`prefers-reduced-motion` 下自动关闭
-
-新增按钮只需加 `data-theme-toggle` 属性，并在按钮内放 `.theme-icon-sun` 与 `.theme-icon-moon` 两个图标。
-
----
+站点默认使用亮色主题。点击工具栏右侧的主题按钮可切换亮色与暗色，手动选择会保存在当前浏览器。共享样式位于 `public/sage.css`。
 
 ## 搜索
 
-按下 `Ctrl+K`（Mac: `Cmd+K`）呼出搜索对话框，或点击导航栏中的搜索按钮。
+点击工具栏中的搜索按钮，或使用 `Ctrl+K`（macOS 上为 `⌘K`）打开搜索。使用 Tab 在输入框、关闭按钮和结果之间移动，按 Esc 关闭搜索并返回原焦点。
 
-搜索基于 [Pagefind](https://pagefind.app/)，索引由 `npm run build` 生成，浏览器端按需加载 `/pagefind/pagefind.js`。
-
-因为索引只在构建产物里，`npm run dev` 下搜索会提示"搜索索引不可用"，属预期行为。
-
-索引只收录带 `data-pagefind-body` 的页面（当前是 `<main>`），所以导航栏、侧边栏、目录不会污染搜索结果；加密页没有该标记，也不会被索引。
-
----
+[Pagefind](https://pagefind.app/) 按需加载构建生成的索引。索引收录标记为 `data-pagefind-body` 的正文，导航、页面目录和受保护正文均排除在外。
 
 ## 添加新文档
 
-1. 在 `src/content/docs/` 目录创建 `.mdx` 文件（可以放子目录）
-2. 在 `src/content/docs/_meta.ts` 中添加一行标题和路径
-3. 完成，构建后自动生效
+1. 在 `src/content/docs/` 创建 `.mdx` 文件，写入 `title` 和可选的 `description`。
+2. 在 `src/content/docs/_meta.ts` 中添加标题与路径：
 
-```bash
-# 1. 创建文件: src/content/docs/tutorial.mdx
----
-title: 教程
----
-
-## 第一步
-...
-
-# 2. 在 src/content/docs/_meta.ts 加一行:
+```ts
 { label: '教程', slug: 'tutorial' }
 ```
 
-### _meta.ts 配置格式
-
-```ts
-// 单页
-{ label: '快速开始', slug: 'getting-started' }
-
-// 分组（可折叠）
-{
-  label: '开发指南',
-  slug: 'dev',              // 可选，用作 DOM id
-  items: [
-    { label: '架构设计', slug: 'dev/architecture' },
-    { label: '接口说明', slug: 'dev/api-reference' },
-  ],
-}
-```
-
-- `label` — 侧边栏显示名
-- `slug` — 文档路径（相对于 `src/content/docs/`，不含 `.mdx`）
-- MetaGroup 的 `slug` 可选，缺省自动从 `label` 生成；重名会自动追加序号
-
-> 侧边栏只有一个顶层 `_meta.ts`：子目录不会各自生成导航。路由与 `_meta.ts` 相互独立——没有登记到侧边栏的 `.mdx` 依然可以访问，只是不出现在导航里。
-
----
+路径相对于 `src/content/docs/`，省略扩展名。使用 `items` 可将多个页面放入可折叠的分组。首页文档列表和侧边栏均读取该配置。
 
 ## 部署
 
-- **Vercel**: 自动检测 Astro（需配置 `STATICRYPT_PASSWORD` 环境变量）
-- **Netlify**: Build `npm run build`, Publish `dist`
-- **Cloudflare Pages**: Build `npm run build`, Output `dist`
-
----
+静态托管平台的构建命令为 `npm run build`，发布目录为 `dist`。在构建环境中配置 `STATICRYPT_PASSWORD`。仓库 README 的「从 Vercel 迁移到 Cloudflare Pages」一节包含部署、域名切换和回退步骤。
 
 ## Markdown 语法参考
 
 | 元素 | 语法 |
-|------|------|
+| --- | --- |
 | 标题 | `# H1` `## H2` `### H3` |
 | 粗体 | `**粗体**` |
 | 斜体 | `*斜体*` |
 | 链接 | `[文字](url)` |
-| 图片 | `![alt](url)` |
-| 代码块 | ` \`\`\`语言 ` |
-| 表格 | `\| 列1 \| 列2 \|` |
+| 图片 | `![说明](url)` |
+| 行内代码 | 使用一对反引号 |
+| 代码块 | 使用三个反引号围住代码，可在第一行标注语言 |
+| 表格 | 使用竖线分隔列 |

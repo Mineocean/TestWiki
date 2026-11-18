@@ -2,24 +2,30 @@
   "name": "sage",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^24.0.0 || >=26.0.0"
+  },
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node scripts/encrypt.mjs --check-password",
     "build": "astro build && node scripts/encrypt.mjs && pagefind --site dist && node scripts/check-build.mjs",
+    "preview": "astro preview",
     "encrypt": "node scripts/encrypt.mjs",
     "typecheck": "astro check",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@astrojs/mdx": "^5.0.4",
-    "astro": "^6.2.2",
-    "pagefind": "^1.5.2",
+    "@astrojs/mdx": "^8.1.6",
+    "astro": "^7.4.12",
+    "pagefind": "^1.6.0",
     "staticrypt": "^3.5.4"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
-    "@types/node": "^25.6.0",
+    "@astrojs/check": "^0.9.12",
+    "@types/node": "^24.0.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.7"
+    "vitest": "^5.1.1"
   }
 }

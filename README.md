@@ -1,132 +1,88 @@
 # Sage
 
-基于 Astro 6 的轻量级文档站点，纯静态部署。内置 Pagefind 全文搜索，完整暗黑模式支持。
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Astro-6.x-7c3aed?logo=astro" />
-  <img src="https://img.shields.io/badge/tested-vitest-7c3aed" />
-  <img src="https://img.shields.io/badge/dark_mode-CSS_custom_properties-7c3aed" />
-</p>
-
-## 特性
-
-- **静态优先** — Astro 构建为纯静态 HTML+CSS；交互（主题、搜索、侧栏）只用少量原生内联脚本，无前端框架
-- **暗黑模式** — 40 个 CSS 自定义属性，0.3s 平滑过渡，系统偏好自动检测
-- **全文搜索** — Pagefind 离线索引，Ctrl+K 呼出
-- **可折叠侧边栏** — 移动端自适应，滚动高亮目录
-- **页面级加密** — StatiCrypt 客户端 AES 加密单个文档
-- **纯静态输出** — `dist/` 目录可直接部署
-
-## 技术栈
-
-| 类别 | 技术 |
-|------|------|
-| 框架 | [Astro 6](https://astro.build/) |
-| 内容 | MDX（`import.meta.glob` 路由，见下文） |
-| 搜索 | [Pagefind](https://pagefind.app/) |
-| 加密 | [StatiCrypt](https://github.com/robinmoisson/staticrypt) |
-| 测试 | [Vitest](https://vitest.dev/) |
-| 字体 | [Inter](https://rsms.me/inter/) |
-
-## 项目结构
-
-```
-src/
-├── components/
-│   ├── SearchDialog.astro   # 搜索对话框（Pagefind 懒加载）
-│   └── ThemeInit.astro      # 主题初始化 + [data-theme-toggle] 绑定
-├── content/docs/            # 文档内容
-│   ├── _meta.ts             # 侧边栏配置（仅顶层这一个）
-│   ├── getting-started.mdx
-│   └── dev/
-│       ├── architecture.mdx
-│       ├── api-reference.mdx
-│       └── secret.mdx       # 加密文档
-├── layouts/
-│   ├── BaseLayout.astro     # 全站外壳（head / 主题 / 搜索 / 浮动按钮）
-│   └── DocsLayout.astro     # 文档页布局（复用 BaseLayout）
-├── lib/
-│   ├── sidebar.ts           # 侧边栏渲染逻辑
-│   └── sidebar.test.ts      # 侧边栏单元测试
-├── pages/
-│   ├── index.astro          # 首页
-│   ├── 404.astro            # 404
-│   └── docs/
-│       └── [...slug].astro  # 文档路由
-├── styles/
-│   └── tokens.css           # 设计 Token（亮色/暗色）
-└── staticrypt-template.html # 加密页模板
-scripts/
-└── encrypt.mjs              # 构建期加密步骤
-```
+Sage 是基于 Astro 7 和 MDX 的静态文档站点，提供 Pagefind 全文搜索、可折叠的文档导航、阅读目录和亮暗主题。界面采用 StyleKit 的 Notion 风格，站点标志与网页图标共用 `public/sage.svg`。 [StyleKit 设计规范](https://www.stylekit.top/api/design/notion-style/design.md?locale=zh)
 
 ## 本地开发
 
-```bash
-npm install
-npm run dev        # → http://localhost:4321
+使用 `.node-version` 中指定的 Node.js 24 版本，在仓库根目录运行以下命令。
+
+```powershell
+npm ci
+npm run dev
 ```
 
-`astro dev` 不会生成 Pagefind 索引，因此开发服务器里搜索对话框会提示"搜索索引不可用"；要试搜索请先 `npm run build` 再预览 `dist/`。
+开发服务默认访问 `http://localhost:4321/`。搜索索引和密码保护由生产构建生成。验证这两个功能时，请先在本地 `.env` 中设置 `STATICRYPT_PASSWORD`，然后构建并预览。示例值只用于本地测试。
 
-## 命令
+```dotenv
+STATICRYPT_PASSWORD=replace-with-a-long-local-password
+```
 
-| 命令 | 说明 |
-|------|------|
-| `npm run dev` | 启动开发服务器 |
-| `npm run build` | 构建 → 加密 → 搜索索引 |
-| `npm run encrypt` | 只重跑加密（需要已存在 `dist/`） |
-| `npm run typecheck` | `astro check` 类型检查 |
-| `npm test` | 运行 Vitest 测试 |
-| `npm run test:watch` | 测试监视模式 |
-
-## 构建
-
-```bash
-# 密码必须通过环境变量提供，仓库里不保存明文
-echo "STATICRYPT_PASSWORD='your-long-password'" > .env   # .env 已被 gitignore
+```powershell
+npm run typecheck
+npm test
 npm run build
+npm run preview
 ```
 
-构建流程：`astro build` → `node scripts/encrypt.mjs`（StatiCrypt 加密 `docs/dev/secret/`）→ `pagefind --site dist`。
+`npm run build` 检查密码配置，生成静态页面，用 StatiCrypt 替换受保护页面，再生成 Pagefind 索引。最后检查正确密码能否解密、错误密码是否被拒绝，以及搜索索引是否排除了受保护页面。发布目录为 `dist/`。
 
-顺序很关键：**加密必须在生成搜索索引之前**，否则 Pagefind 会把待加密页面的明文写进索引分片。加密后的页面没有 `data-pagefind-body` 标记，因此不会被索引。
+## 添加文档
 
-## 添加新文档
+1. 在 `src/content/docs/` 中创建 `.mdx` 文件，可使用子目录。Frontmatter 支持 `title` 和可选的 `description`。
+2. 在 `src/content/docs/_meta.ts` 中添加标题和文档路径。路径相对于 `src/content/docs/`，省略扩展名。导航及首页文档列表从此文件读取。
+3. 重新构建。文档地址由文件路径决定，例如 `src/content/docs/dev/api-reference.mdx` 对应 `/docs/dev/api-reference`。
 
-1. 在 `src/content/docs/` 创建 `.mdx` 文件（可以放在子目录里）
-2. 在 `src/content/docs/_meta.ts` 加一行配置
-3. 构建后自动生效
+共享样式与主题脚本位于 `public/sage.css` 和 `public/theme.js`。文档布局位于 `src/layouts/DocsLayout.astro`，密码页模板位于 `src/staticrypt-template.html`。
 
-```ts
-// _meta.ts
-{ label: '新文档', slug: 'new-doc' }                       // 单页
-{ label: '开发指南', slug: 'dev', items: [ /* ... */ ] }    // 可折叠分组
+`/docs/dev/secret` 使用客户端密码保护。MDX 源文件在仓库中以明文保存，开发服务也会渲染该源文件。请将真正的凭据和私密资料保存在具备访问控制的系统中。
+
+## 从 Vercel 迁移到 Cloudflare Pages
+
+### 1. 创建 Pages 项目
+
+先让 Vercel 继续服务现有域名。将待部署版本推送到 GitHub 或 GitLab.com，在 Cloudflare 控制台打开 **Workers & Pages → Create application → Pages → Import an existing Git repository**，选择仓库并填写：
+
+| 设置 | 值 |
+| --- | --- |
+| 生产分支 | `master`，或实际用于生产的分支 |
+| 框架预设 | Astro |
+| 根目录 | 仓库根目录，留空即可 |
+| 构建命令 | `npm run build` |
+| 构建输出目录 | `dist` |
+| Node.js | 使用 `.node-version`。如需在控制台指定，令 `NODE_VERSION` 与文件内容一致 |
+| 构建环境变量 | `STATICRYPT_PASSWORD` |
+
+在 Pages 项目的环境变量设置中，将 `STATICRYPT_PASSWORD` 保存为加密变量。生产环境使用现有 Vercel 密码可保留读者的使用方式。启用预览构建时，给预览环境设置独立的测试密码。保存后启动构建。此站点直接发布静态产物，无需 Cloudflare Astro 适配器或 Pages Functions。 [Pages Git 集成](https://developers.cloudflare.com/pages/get-started/git-integration/) · [构建环境](https://developers.cloudflare.com/pages/configuration/build-image/) · [Pages 环境变量与密钥](https://developers.cloudflare.com/pages/functions/bindings/)
+
+自托管 GitLab 或其他 Git 服务可使用 Direct Upload。在本地或 CI 用对应环境的 `STATICRYPT_PASSWORD` 运行 `npm ci` 和 `npm run build`，确认成功后上传 `dist/`。以下命令中的项目名称需要换成你选定的名称。项目只需创建一次，后续发布仅执行最后一行。 [Direct Upload 指南](https://developers.cloudflare.com/pages/get-started/direct-upload/)
+
+```powershell
+$project = 'sage-docs'
+$branch = 'master'
+npx wrangler login
+npx wrangler pages project create $project --production-branch $branch
+npx wrangler pages deploy dist --project-name $project --branch $branch
 ```
 
-路由由 `src/pages/docs/[...slug].astro` 里的 `import.meta.glob` 生成，slug 就是相对 `src/content/docs/` 的路径（不含扩展名）。`_meta.ts` 只影响侧边栏，不影响路由——没有登记到侧边栏的文档仍然可以访问。
+### 2. 验证 Pages 地址
 
-## 暗黑模式
+在控制台提供的 `*.pages.dev` 地址上，用无痕窗口检查：
 
-设计 Token 集中在 `src/styles/tokens.css`，共 40 个 CSS 自定义属性，亮色/暗色各一套。
+- 打开首页、`/docs/getting-started` 和 `/docs/dev/api-reference`，确认页面、标志和导航正常。访问一个不存在的路径，确认返回自定义 404 和 HTTP 404。
+- 打开搜索，输入「架构」，确认可以进入架构设计页。搜索受保护文档中的独有内容，确认搜索无结果。
+- 直接打开 `/docs/dev/secret`，确认错误密码被拒绝、正确密码能打开正文。
 
-- 首屏前由 `ThemeInit.astro` 的 inline 脚本写入 `<html data-theme>`，避免闪烁
-- 任何带 `data-theme-toggle` 的按钮都会自动接入切换逻辑，图标用 `.theme-icon-sun` / `.theme-icon-moon` 由 CSS 控制显隐
-- 用户选择存入 `localStorage`
+如果构建提示缺少 `STATICRYPT_PASSWORD`，检查失败的部署究竟属于生产还是预览环境，补充相应变量后重新构建。 [Pages 静态文件与 404](https://developers.cloudflare.com/pages/configuration/serving-pages/)
 
-## 加密文档
+### 3. 切换域名
 
-`src/content/docs/dev/secret.mdx` 在构建时被 StatiCrypt 替换为密码页，密码来自 `STATICRYPT_PASSWORD`。
+1. 保存当前指向 Vercel 的 DNS 记录。若准备迁移根域名的 DNS 托管，先在 Cloudflare 核对原有记录，尤其是邮箱使用的 MX、TXT 及其他子域名记录。
+2. 在 Pages 项目中打开 **Custom domains → Set up a custom domain**，添加原域名。根域名（例如 `example.com`）需要将 DNS 区域加入当前 Cloudflare 账户，并按 Cloudflare 提示在注册商处更新域名服务器。子域名（例如 `docs.example.com`）可继续使用原 DNS 提供商，在 Pages 中完成域名关联后，将该子域名的 CNAME 改为 Pages 项目给出的 `*.pages.dev` 地址。已使用 Cloudflare DNS 时，按面板提示替换对应主机名的旧记录。
+3. 等待域名和 HTTPS 状态变为可用，再通过正式域名复查上一步。也检查 Vercel 配置中使用过的重定向，以及根域名与 `www` 的访问方式。 [Cloudflare 自定义域名](https://developers.cloudflare.com/pages/configuration/custom-domains/) · [从 Vercel 迁移](https://developers.cloudflare.com/pages/migrations/migrating-from-vercel/)
 
-需要清楚它的边界：这是**客户端加密**，只能挡住直接访问产物的读者。`npm run dev` 下该页仍是明文（加密是构建期步骤），要验证加密效果请构建后预览 `dist/`。`src/content/docs/dev/secret.mdx` 本身是仓库里的明文，索引也已排除该页，但不要把真正的密钥放进这个仓库。`git log` 里历史上出现过演示密码，投入生产前请轮换密码（必要时重写历史）。
+### 4. 回退与停用 Vercel
 
-## 部署
-
-纯静态输出 `dist/`：
-
-- **Vercel**: 自动检测 Astro（记得配置 `STATICRYPT_PASSWORD` 环境变量）
-- **Netlify**: Build `npm run build`, Publish `dist`
-- **Cloudflare Pages**: Build `npm run build`, Output `dist`
+若 Cloudflare 部署版本出错，在 Pages 的 **Deployments** 中将上一版成功的生产部署设为当前版本。若需要把流量切回 Vercel，在当前权威 DNS 服务商恢复之前指向 Vercel 的记录，并确认该域名在 Vercel 仍处于可用状态。保留 Vercel 项目，待正式域名稳定、确认无需回退后再停用旧部署。 [Cloudflare Pages 回退](https://developers.cloudflare.com/pages/configuration/rollbacks/)
 
 ## 许可
 

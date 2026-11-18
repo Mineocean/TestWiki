@@ -1,78 +1,65 @@
-// Post-build assertions (also run by CI).
-//
-// Pagefind fragments are compressed, so plain grep cannot see a leak — decode
-// them first. The protected page must be encrypted, wired up, and absent from
-// the search index.
+import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { runInNewContext } from 'node:vm'
 import { brotliDecompressSync, gunzipSync } from 'node:zlib'
-import { createRequire } from 'node:module'
 
-const require = createRequire(import.meta.url)
-
-// Mirror scripts/encrypt.mjs: a gitignored .env is enough.
 if (!process.env.STATICRYPT_PASSWORD) {
   try {
-    process.loadEnvFile('.env')
-  } catch {
-    // no .env — the decryption round-trip is skipped below
+    process.loadEnvFile()
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error
   }
 }
 
-const PROTECTED_PAGE = 'dist/docs/dev/secret/index.html'
-const SECRET_MARKERS = ['sk-prod-zzzzz', 'sk-dev-xxxxx', 'api.example.internal']
+const protectedPage = 'dist/docs/dev/secret/index.html'
+const protectedHtml = readFileSync(protectedPage, 'utf8')
+const privateSection = '机密内容'
 
-const failures = []
-const check = (label, ok) => {
-  console.log(`${ok ? 'PASS' : 'FAIL'}  ${label}`)
-  if (!ok) failures.push(label)
+assert(!protectedHtml.includes(privateSection), 'The protected page must not contain its plaintext section.')
+assert.match(protectedHtml, /id="staticrypt-form"/)
+assert.match(protectedHtml, /staticrypt\.handleDecryptionOfPage\(/)
+
+const runtime = protectedHtml.match(/const staticryptInitiator = [\s\S]+?;\s*const staticryptConfig = \{[^\r\n]*\};/)
+assert(runtime, 'The protected page must contain the StatiCrypt runtime and encrypted document.')
+
+const password = process.env.STATICRYPT_PASSWORD
+if (password) {
+  let unlockedHtml = ''
+  const unlock = runInNewContext(
+    runtime[0] + '\nstaticryptInitiator.init(staticryptConfig, { replaceHtmlCallback }).handleDecryptionOfPage',
+    {
+      crypto,
+      TextEncoder,
+      TextDecoder,
+      replaceHtmlCallback: (html) => { unlockedHtml = html },
+    },
+  )
+  assert.equal((await unlock(password + '-wrong', false)).isSuccessful, false)
+  assert.equal(unlockedHtml, '')
+  assert.equal((await unlock(password, false)).isSuccessful, true)
+  assert(unlockedHtml.includes(privateSection), 'The password must reveal the protected document.')
 }
 
-function decode(buffer) {
+function decodeFragment(buffer) {
   try {
     return brotliDecompressSync(buffer).toString('utf8')
   } catch {
-    try {
-      return gunzipSync(buffer).toString('utf8')
-    } catch {
-      return buffer.toString('utf8')
-    }
+    return gunzipSync(buffer).toString('utf8')
   }
 }
 
-// ── The protected page is encrypted and wired up ────────────────────────────
-const protectedHtml = readFileSync(PROTECTED_PAGE, 'utf8')
-check('protected page contains no plaintext', !SECRET_MARKERS.some((m) => protectedHtml.includes(m)))
-check('protected page has the password form', protectedHtml.includes('id="staticrypt-form"'))
-check('protected page initialises staticrypt', protectedHtml.includes('staticryptInitiator.init('))
-check('protected page handles submission', protectedHtml.includes('handleDecryptionOfPage'))
-
-// ── The password really decrypts it (uses staticrypt's own codec) ───────────
-const password = process.env.STATICRYPT_PASSWORD
-if (password) {
-  const cryptoEngine = require('staticrypt/lib/cryptoEngine.js')
-  const codec = require('staticrypt/lib/codec.js').init(cryptoEngine)
-  const config = JSON.parse(protectedHtml.match(/staticryptConfig = (\{[\s\S]*?\});/)[1])
-  const salt = config.staticryptSaltUniqueVariableName
-  const payload = config.staticryptEncryptedMsgUniqueVariableName
-
-  const good = await codec.decode(payload, await cryptoEngine.hashPassword(password, salt), salt, 0, password)
-  check('STATICRYPT_PASSWORD decrypts the page', good.success)
-
-  const wrong = await codec.decode(payload, await cryptoEngine.hashPassword(`${password}-wrong`, salt), salt, 0, password)
-  check('a wrong password is rejected', !wrong.success)
-} else {
-  console.log('SKIP  decryption round-trip (STATICRYPT_PASSWORD not set)')
-}
-
-// ── The search index never sees the protected content ───────────────────────
 const fragmentDir = 'dist/pagefind/fragment'
-const fragments = readdirSync(fragmentDir).map((file) => decode(readFileSync(`${fragmentDir}/${file}`)))
-check('no plaintext in the search index', !fragments.some((text) => SECRET_MARKERS.some((m) => text.includes(m))))
-check('protected page is not indexed', !fragments.some((text) => text.includes('"/docs/dev/secret/"')))
-check('content pages are indexed', fragments.filter((text) => /"url":"\/docs\//.test(text)).length >= 3)
+const fragments = readdirSync(fragmentDir).map((file) => {
+  const text = decodeFragment(readFileSync(join(fragmentDir, file)))
+  const { content, url } = JSON.parse(text.replace(/^pagefind_dcd/, ''))
+  assert(!content.replaceAll('\u200b', '').includes(privateSection), 'The search index must exclude the protected text.')
+  return url.replace(/\/index\.html$/, '').replace(/\/$/, '') || '/'
+})
 
-if (failures.length > 0) {
-  console.error(`\n${failures.length} build assertion(s) failed.`)
-  process.exit(1)
+assert(!fragments.includes('/docs/dev/secret'), 'The search index must exclude the protected document.')
+for (const route of ['/', '/docs/getting-started', '/docs/dev/architecture', '/docs/dev/api-reference']) {
+  assert(fragments.includes(route), 'Missing search index entry for ' + route)
 }
-console.log('\nAll build assertions passed.')
+
+console.log('Build checks passed: password page and public search index.')

@@ -1,48 +1,22 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import SiteHeader from '../components/SiteHeader.astro'
 ---
-
-<BaseLayout title="404 | Sage">
-  <main class="error-container" data-pagefind-body>
-    <h1>404</h1>
-    <p>页面未找到</p>
-    <a href="/">← 返回首页</a>
+<BaseLayout title="页面未找到 | Sage" noIndex>
+  <SiteHeader context="404" />
+  <main class="error-page" id="content" tabindex="-1">
+    <h1>页面未找到</h1>
+    <p>请检查网址，或在站内搜索所需的文档。</p>
+    <a href="/" class="ghost-button">← 返回首页</a>
   </main>
-
-  <style is:global>
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100dvh;
-      text-align: center;
-    }
-    .error-container h1 {
-      font-size: 5rem;
-      font-weight: 800;
-      margin: 0;
-      color: var(--color-muted);
-      opacity: 0.3;
-    }
-    .error-container p {
-      color: var(--color-muted);
-      margin: 0.5rem 0 1.5rem;
-      font-size: 1.1rem;
-    }
-    .error-container a {
-      display: inline-block;
-      padding: 0.6rem 1.5rem;
-      border-radius: 0.5rem;
-      background: var(--color-fg);
-      color: var(--color-bg);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 0.9rem;
-      transition: background 0.3s ease, color 0.3s ease, transform 0.15s;
-    }
-    .error-container a:hover {
-      text-decoration: none;
-      transform: translateY(-1px);
-    }
-  </style>
 </BaseLayout>
+
+<style>
+  .error-page {
+    max-width: calc(var(--page-max-width) + 48px);
+    margin-inline: auto;
+    padding: var(--spacing-64) var(--spacing-24);
+  }
+  .error-page p { margin-block: var(--spacing-12) var(--spacing-24); font-size: var(--text-body-lg); color: var(--color-muted); }
+  .error-page a { margin-left: -8px; }
+</style>

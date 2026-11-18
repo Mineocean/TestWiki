@@ -1,46 +1,31 @@
 ---
+import type { MDXInstance } from 'astro'
+import DocumentTable from '../../components/DocumentTable.astro'
 import DocsLayout from '../../layouts/DocsLayout.astro'
-import topMeta from '../../content/docs/_meta'
+import sidebar from '../../content/docs/_meta'
 
-interface MdxFrontmatter {
+interface Frontmatter {
   title: string
   description?: string
 }
 
-interface MdxModule {
-  frontmatter: MdxFrontmatter
-  default: any
-  getHeadings: () => { depth: number; slug: string; text: string }[]
-}
-
-export async function getStaticPaths() {
-  const docs = import.meta.glob('../../content/docs/**/*.mdx')
-  return Object.keys(docs).map((filePath) => {
-    const slug = filePath.replace('../../content/docs/', '').replace('.mdx', '')
-    return { params: { slug }, props: { slug } }
+export function getStaticPaths() {
+  const docs = import.meta.glob<MDXInstance<Frontmatter>>('../../content/docs/**/*.mdx', { eager: true })
+  return Object.entries(docs).map(([path, doc]) => {
+    const slug = path.slice('../../content/docs/'.length, -'.mdx'.length)
+    return { params: { slug }, props: { doc } }
   })
 }
 
-const { slug } = Astro.props as { slug: string }
-
-const modules = import.meta.glob<MdxModule>(
-  '../../content/docs/**/*.mdx',
-  { eager: true }
-)
-
-const filePath = `../../content/docs/${slug}.mdx`
-const module = modules[filePath]
-const title = module?.frontmatter?.title || slug.replace(/^.*\//, '')
-const description = module?.frontmatter?.description
-const headings = module?.getHeadings?.() || []
-const Content = module?.default
+const { doc } = Astro.props
+const { Content, frontmatter: { title, description }, getHeadings } = doc
 ---
-
 <DocsLayout
   title={title}
   description={description}
-  sidebar={topMeta}
-  headings={headings}
+  sidebar={sidebar}
+  headings={getHeadings()}
+  protectedPage={Astro.params.slug === 'dev/secret'}
 >
-  {Content && <Content />}
+  <Content components={{ table: DocumentTable }} />
 </DocsLayout>

@@ -5,7 +5,7 @@ description: 了解项目技术栈与整体架构。
 
 ## 技术栈
 
-- **框架**: Astro 6
+- **框架**: Astro 7
 - **内容**: MDX（`import.meta.glob` 路由 + `_meta.ts` 侧边栏）
 - **搜索**: Pagefind（构建期索引）
 - **加密**: StatiCrypt（客户端 AES，单页）
@@ -64,14 +64,12 @@ export default meta
 
 ## 构建流程
 
-1. `astro build` — `.mdx` 经 `src/pages/docs/[...slug].astro` 的 `import.meta.glob` 渲染为静态 HTML
-2. `node scripts/encrypt.mjs` — StatiCrypt 用 `STATICRYPT_PASSWORD` 加密 `dist/docs/dev/secret/index.html`
-3. `pagefind --site dist` — 只索引带 `data-pagefind-body` 的页面（加密页已被替换，且没有该标记）
+1. 确认构建环境已设置 `STATICRYPT_PASSWORD`。
+2. 用 Astro 将 MDX 渲染为静态 HTML。
+3. 用 StatiCrypt 加密 `dist/docs/dev/secret/index.html`。
+4. 用 Pagefind 索引带 `data-pagefind-body` 的公开正文。
+5. 检查密码页能否正确解密，并核对搜索索引收录的页面。
 
 ## 加密的边界
 
-StatiCrypt 是**客户端**加密：密文、盐、解密脚本都在静态文件里，密码正确时由浏览器本地解密。它能挡住直接抓取产物的读者，但不是访问控制：
-
-- `src/content/docs/dev/secret.mdx` 在仓库里始终是明文
-- 密码只存在于构建环境（`.env` / CI secret），仓库里不保存
-- 加密必须发生在 Pagefind 索引之前，否则明文会进索引
+StatiCrypt 将密文和解密脚本置于静态页面，浏览器在输入正确密码后恢复正文。构建密码通过环境变量或本地 `.env` 提供。源文件 `src/content/docs/dev/secret.mdx` 在仓库中以明文保存。需要限制访问的资料应保存在具备访问控制的系统中。

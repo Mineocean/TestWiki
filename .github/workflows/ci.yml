@@ -9,20 +9,16 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     env:
-      # Build-time-only secret: the encrypted demo page needs *a* password.
-      STATICRYPT_PASSWORD: ci-build-only-password
+      STATICRYPT_PASSWORD: demo-password-for-ci-only
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7.0.1
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7.1.0
         with:
-          node-version: 22
+          node-version-file: .node-version
           cache: npm
 
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-
-      - name: Assert the protected page is not in the search index
-        run: node scripts/check-build.mjs

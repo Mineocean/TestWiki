@@ -26,33 +26,33 @@ function slugify(label: string): string {
   return label.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9\u4e00-\u9fff\u3400-\u4dbf-]/g, '')
 }
 
-export function renderSidebar(entries: MetaEntry[]): string {
-  const usedIds = new Map<string, number>()
+export function renderSidebar(entries: MetaEntry[], currentPath?: string): string {
+  const usedIds = new Set<string>()
 
-  // Groups must not collide on DOM ids, otherwise one title would toggle
-  // another group's items.
   const uniqueGroupId = (entry: MetaGroup): string => {
     const base = entry.slug || slugify(entry.label) || 'group'
-    const seen = usedIds.get(base) ?? 0
-    usedIds.set(base, seen + 1)
-    return seen === 0 ? base : `${base}-${seen + 1}`
+    let id = base
+    for (let suffix = 2; usedIds.has(id); suffix++) id = `${base}-${suffix}`
+    usedIds.add(id)
+    return id
+  }
+
+  function renderItem(item: MetaItem, standalone = false): string {
+    const path = '/docs/' + item.slug
+    const selected = path === currentPath ? ' aria-current="page"' : ''
+    const classes = 'sidebar-item block-row' + (standalone ? ' sidebar-item-standalone' : '')
+    return `<a href="${escapeHtml(path)}" class="${classes}"${selected}>${escapeHtml(item.label)}</a>`
   }
 
   return entries
     .map((entry) => {
       if ('items' in entry) {
         const groupId = escapeHtml(uniqueGroupId(entry))
-        const items = entry.items
-          .map(
-            (item) => `
-              <a href="/docs/${escapeHtml(item.slug)}" class="sidebar-item">${escapeHtml(item.label)}</a>
-            `,
-          )
-          .join('')
+        const items = entry.items.map((item) => renderItem(item)).join('')
 
         return `
         <div class="sidebar-group">
-          <button type="button" class="sidebar-group-title" data-group="${groupId}" aria-expanded="true" aria-controls="group-${groupId}">
+          <button type="button" class="sidebar-group-title block-row" data-group="${groupId}" aria-expanded="true" aria-controls="group-${groupId}">
             ${escapeHtml(entry.label)}
             <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="m6 9 6 6 6-6"/>
@@ -66,7 +66,7 @@ export function renderSidebar(entries: MetaEntry[]): string {
 
       return `
       <div class="sidebar-group">
-        <a href="/docs/${escapeHtml(entry.slug)}" class="sidebar-item sidebar-item-standalone">${escapeHtml(entry.label)}</a>
+        ${renderItem(entry, true)}
       </div>`
     })
     .join('')

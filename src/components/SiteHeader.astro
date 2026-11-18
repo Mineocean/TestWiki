@@ -1,0 +1,30 @@
+---
+import Icon from './Icon.astro'
+
+interface Props {
+  context: string
+}
+const { context } = Astro.props
+---
+<header class="site-header">
+  <div class="site-header-start">
+    <slot />
+    <a class="site-brand ghost-button" href="/">
+      <img src="/sage.svg" alt="" width="24" height="24" />
+      Sage
+    </a>
+    <span class="site-context">{context}</span>
+  </div>
+  <div class="site-header-actions">
+    <button class="ghost-button" type="button" data-search-trigger aria-haspopup="dialog" aria-controls="search-dialog" aria-keyshortcuts="Control+K Meta+K">
+      <Icon name="search" /> 搜索
+    </button>
+    <a class="ghost-button" href="https://github.com/Mineocean/TestWiki" target="_blank" rel="noreferrer" aria-label="GitHub 仓库">
+      <Icon name="github" />
+    </a>
+    <button class="ghost-button" type="button" data-theme-toggle aria-label="暗色模式" aria-pressed="false">
+      <Icon name="sun" class="theme-icon-sun" />
+      <Icon name="moon" class="theme-icon-moon" />
+    </button>
+  </div>
+</header>
