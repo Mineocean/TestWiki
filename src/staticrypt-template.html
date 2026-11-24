@@ -4,10 +4,29 @@
   <meta charset="utf-8" />
   <title>/*[|template_title|]*/ 0 | Sage</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
   <meta name="robots" content="noindex" />
   <link rel="icon" type="image/svg+xml" href="/sage.svg" />
-  <script src="/theme.js"></script>
+  <script>
+    (() => {
+      const root = document.documentElement
+      let theme
+      try {
+        theme = localStorage.getItem('theme')
+      } catch {}
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      root.dataset.theme = theme
+      root.style.colorScheme = theme
+    })()
+  </script>
+  <style>
+    html { background: #f7f6f3; color: #37352f; color-scheme: light; }
+    html[data-theme='dark'] { background: #21201e; color: #edeae4; color-scheme: dark; }
+  </style>
   <link rel="stylesheet" href="/sage.css" />
+  <script defer src="/theme.js"></script>
   <style>
     .locked-page {
       width: min(100% - 48px, 440px);

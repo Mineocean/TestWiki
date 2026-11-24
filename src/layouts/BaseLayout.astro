@@ -14,12 +14,31 @@ const { title, description, noIndex = false } = Astro.props
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     {noIndex && <meta name="robots" content="noindex" />}
     <link rel="icon" type="image/svg+xml" href="/sage.svg" />
-    <script is:inline src="/theme.js"></script>
+    <script is:inline>
+      (() => {
+        const root = document.documentElement
+        let theme
+        try {
+          theme = localStorage.getItem('theme')
+        } catch {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+        root.dataset.theme = theme
+        root.style.colorScheme = theme
+      })()
+    </script>
+    <style is:inline>
+      html { background: #f7f6f3; color: #37352f; color-scheme: light; }
+      html[data-theme='dark'] { background: #21201e; color: #edeae4; color-scheme: dark; }
+    </style>
     <link rel="stylesheet" href="/sage.css" />
+    <script is:inline defer src="/theme.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#content">跳至正文</a>

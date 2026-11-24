@@ -1,21 +1,23 @@
 (() => {
-  const root = document.documentElement
   const darkQuery = window.matchMedia?.('(prefers-color-scheme: dark)')
-  let savedTheme
 
-  try {
-    savedTheme = localStorage.getItem('theme')
-  } catch {
-    // The site also works when browser storage is unavailable.
+  function readSavedTheme() {
+    try {
+      const saved = localStorage.getItem('theme')
+      return saved === 'light' || saved === 'dark' ? saved : null
+    } catch {
+      return null
+    }
   }
 
   function resolveTheme() {
-    if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme
-    return darkQuery?.matches ? 'dark' : 'light'
+    return readSavedTheme() ?? (darkQuery?.matches ? 'dark' : 'light')
   }
 
   function applyTheme(theme) {
+    const root = document.documentElement
     root.dataset.theme = theme
+    root.style.colorScheme = theme
     const isDark = theme === 'dark'
     document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
       button.setAttribute('aria-pressed', String(isDark))
@@ -23,24 +25,39 @@
     })
   }
 
-  if (savedTheme !== 'light' && savedTheme !== 'dark') savedTheme = null
-  applyTheme(resolveTheme())
-
-  document.addEventListener('DOMContentLoaded', () => applyTheme(resolveTheme()))
-
-  darkQuery?.addEventListener?.('change', () => {
-    if (!savedTheme) applyTheme(resolveTheme())
-  })
-
-  document.addEventListener('click', (event) => {
+  function handleClick(event) {
     if (!(event.target instanceof Element) || !event.target.closest('[data-theme-toggle]')) return
 
-    savedTheme = root.dataset.theme === 'dark' ? 'light' : 'dark'
-    applyTheme(savedTheme)
+    const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+    applyTheme(nextTheme)
     try {
-      localStorage.setItem('theme', savedTheme)
+      localStorage.setItem('theme', nextTheme)
     } catch {
       // Keep the user's choice for the current page.
     }
-  })
+  }
+
+  function handleReady() {
+    applyTheme(resolveTheme())
+  }
+
+  function handleSystemChange() {
+    if (!readSavedTheme()) applyTheme(resolveTheme())
+  }
+
+  const state = window.__sageTheme
+  if (state) {
+    document.removeEventListener('click', state.handleClick)
+    document.removeEventListener('DOMContentLoaded', state.handleReady)
+    window.removeEventListener('pageshow', state.handleReady)
+    state.darkQuery?.removeEventListener?.('change', state.handleSystemChange)
+  }
+
+  window.__sageTheme = { darkQuery, handleClick, handleReady, handleSystemChange }
+
+  applyTheme(resolveTheme())
+  document.addEventListener('DOMContentLoaded', handleReady)
+  window.addEventListener('pageshow', handleReady)
+  darkQuery?.addEventListener?.('change', handleSystemChange)
+  document.addEventListener('click', handleClick)
 })()
