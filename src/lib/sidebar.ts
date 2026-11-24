@@ -11,6 +11,47 @@ export interface MetaGroup {
 
 export type MetaEntry = MetaItem | MetaGroup
 
+export interface SidebarValidationResult {
+  missingSlugs: string[]
+  duplicateSlugs: string[]
+  unlistedSlugs: string[]
+}
+
+export function collectSidebarSlugs(entries: MetaEntry[]): string[] {
+  return entries.flatMap((entry) => ('items' in entry ? entry.items.map((item) => item.slug) : [entry.slug]))
+}
+
+export function validateSidebar(entries: MetaEntry[], availableSlugs: Iterable<string>): SidebarValidationResult {
+  const available = new Set(availableSlugs)
+  const seen = new Set<string>()
+  const missingSlugs: string[] = []
+  const duplicateSlugs: string[] = []
+
+  for (const slug of collectSidebarSlugs(entries)) {
+    if (seen.has(slug)) {
+      if (!duplicateSlugs.includes(slug)) duplicateSlugs.push(slug)
+    } else {
+      seen.add(slug)
+    }
+    if (!available.has(slug) && !missingSlugs.includes(slug)) {
+      missingSlugs.push(slug)
+    }
+  }
+
+  const unlistedSlugs = [...available].filter((slug) => !seen.has(slug))
+  return { missingSlugs, duplicateSlugs, unlistedSlugs }
+}
+
+export function assertValidSidebar(entries: MetaEntry[], availableSlugs: Iterable<string>): void {
+  const { missingSlugs, duplicateSlugs } = validateSidebar(entries, availableSlugs)
+  const problems: string[] = []
+  if (missingSlugs.length > 0) problems.push(`missing docs for slugs: ${missingSlugs.join(', ')}`)
+  if (duplicateSlugs.length > 0) problems.push(`duplicate slugs: ${duplicateSlugs.join(', ')}`)
+  if (problems.length > 0) {
+    throw new Error(`Invalid sidebar configuration in src/content/docs/_meta.ts (${problems.join('; ')})`)
+  }
+}
+
 /** Escape a value before interpolating it into the sidebar HTML. */
 function escapeHtml(value: string): string {
   return value

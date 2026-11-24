@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro'
+import { siteConfig } from '../site.config'
 
 interface Props {
   context: string
@@ -11,7 +12,7 @@ const { context } = Astro.props
     <slot />
     <a class="site-brand ghost-button" href="/">
       <img src="/sage.svg" alt="" width="24" height="24" />
-      Sage
+      {siteConfig.name}
     </a>
     <span class="site-context">{context}</span>
   </div>
@@ -19,10 +20,10 @@ const { context } = Astro.props
     <button class="ghost-button" type="button" data-search-trigger aria-haspopup="dialog" aria-controls="search-dialog" aria-keyshortcuts="Control+K Meta+K">
       <Icon name="search" /> 搜索
     </button>
-    <a class="ghost-button" href="https://github.com/Mineocean/TestWiki" target="_blank" rel="noreferrer" aria-label="GitHub 仓库">
+    <a class="ghost-button" href={siteConfig.repoUrl} target="_blank" rel="noreferrer" aria-label={siteConfig.repoLabel}>
       <Icon name="github" />
     </a>
-    <button class="ghost-button" type="button" data-theme-toggle aria-label="暗色模式" aria-pressed="false">
+    <button class="ghost-button" type="button" data-theme-toggle aria-label="切换至暗色模式" aria-pressed="false">
       <Icon name="sun" class="theme-icon-sun" />
       <Icon name="moon" class="theme-icon-moon" />
     </button>

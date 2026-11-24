@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import SiteHeader from '../components/SiteHeader.astro'
+import { siteConfig } from '../site.config'
 ---
-<BaseLayout title="页面未找到 | Sage" noIndex>
+<BaseLayout title={`页面未找到 | ${siteConfig.name}`} noIndex>
   <SiteHeader context="404" />
   <main class="error-page" id="content" tabindex="-1">
     <h1>页面未找到</h1>

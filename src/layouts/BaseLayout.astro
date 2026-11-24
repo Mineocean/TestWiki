@@ -1,5 +1,6 @@
 ---
 import SearchDialog from '../components/SearchDialog.astro'
+import { siteConfig } from '../site.config'
 
 interface Props {
   title: string
@@ -9,7 +10,7 @@ interface Props {
 const { title, description, noIndex = false } = Astro.props
 ---
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang={siteConfig.lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

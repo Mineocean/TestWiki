@@ -1,28 +1,31 @@
 ---
+import { getCollection } from 'astro:content'
 import DocsLayout from '../layouts/DocsLayout.astro'
 import Icon from '../components/Icon.astro'
 import sidebar from '../content/docs/_meta'
+import { assertValidSidebar } from '../lib/sidebar'
+import { siteConfig } from '../site.config'
 
-const docs = sidebar.flatMap((entry) => 'items' in entry ? entry.items : [entry])
-const descriptions = import.meta.glob<{ description?: string }>('../content/docs/**/*.mdx', {
-  eager: true,
-  import: 'frontmatter',
-})
+const docs = sidebar.flatMap((entry) => ('items' in entry ? entry.items : [entry]))
+const collection = await getCollection('docs')
+const docMap = new Map(collection.map((entry) => [entry.id, entry.data]))
+assertValidSidebar(sidebar, docMap.keys())
 ---
 
-<DocsLayout title="Sage" description="基于 Astro 的轻量级文档站点" sidebar={sidebar} home>
+<DocsLayout title={siteConfig.name} description={siteConfig.description} sidebar={sidebar} home>
   <div class="home-intro">
     <img src="/sage.svg" alt="" width="72" height="72" />
-    <h1>Markdown Sage</h1>
-    <p>基于 Astro 的轻量级文档站点。用 Markdown 编写文档，通过全文搜索快速查找内容。</p>
+    <h1>{siteConfig.homeTitle}</h1>
+    <p>{siteConfig.heroDescription}</p>
   </div>
 
   <section class="home-section" aria-labelledby="browse-docs">
     <h2 id="browse-docs">浏览文档</h2>
     <ul class="document-list">
       {docs.map(({ label, slug }) => {
-        const locked = slug === 'dev/secret'
-        const description = descriptions['../content/docs/' + slug + '.mdx']?.description
+        const meta = docMap.get(slug)
+        const locked = Boolean(meta?.protected)
+        const description = meta?.description
         return (
           <li>
             <a class="block-row document-link" href={'/docs/' + slug}>
@@ -40,10 +43,10 @@ const descriptions = import.meta.glob<{ description?: string }>('../content/docs
   </section>
 
   <section class="home-section" aria-labelledby="about-sage">
-    <h2 id="about-sage">关于 Sage</h2>
+    <h2 id="about-sage">关于 {siteConfig.name}</h2>
     <div class="home-callout">
       <Icon name="info" />
-      <p>Sage 将 MDX 构建为静态页面，提供可折叠的文档导航与自动高亮的页面目录。构建产物可部署到 Cloudflare Pages、Vercel 或 Netlify。</p>
+      <p>{siteConfig.name} 将 Markdown 与 MDX 构建为静态页面，提供可折叠的文档导航与自动高亮的页面目录。构建产物可部署到 Cloudflare Pages、Vercel 或 Netlify。</p>
     </div>
   </section>
 </DocsLayout>

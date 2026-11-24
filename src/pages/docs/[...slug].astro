@@ -1,31 +1,29 @@
 ---
-import type { MDXInstance } from 'astro'
+import { getCollection, render } from 'astro:content'
 import DocumentTable from '../../components/DocumentTable.astro'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import sidebar from '../../content/docs/_meta'
+import { assertValidSidebar } from '../../lib/sidebar'
 
-interface Frontmatter {
-  title: string
-  description?: string
-}
-
-export function getStaticPaths() {
-  const docs = import.meta.glob<MDXInstance<Frontmatter>>('../../content/docs/**/*.mdx', { eager: true })
-  return Object.entries(docs).map(([path, doc]) => {
-    const slug = path.slice('../../content/docs/'.length, -'.mdx'.length)
-    return { params: { slug }, props: { doc } }
-  })
+export async function getStaticPaths() {
+  const docs = await getCollection('docs')
+  assertValidSidebar(sidebar, docs.map((doc) => doc.id))
+  return docs.map((doc) => ({
+    params: { slug: doc.id },
+    props: { doc },
+  }))
 }
 
 const { doc } = Astro.props
-const { Content, frontmatter: { title, description }, getHeadings } = doc
+const { Content, headings } = await render(doc)
+const { title, description, protected: protectedPage } = doc.data
 ---
 <DocsLayout
   title={title}
   description={description}
   sidebar={sidebar}
-  headings={getHeadings()}
-  protectedPage={Astro.params.slug === 'dev/secret'}
+  headings={headings}
+  protectedPage={protectedPage}
 >
   <Content components={{ table: DocumentTable }} />
 </DocsLayout>

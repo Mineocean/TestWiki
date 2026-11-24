@@ -6,9 +6,9 @@ description: 了解项目技术栈与整体架构。
 ## 技术栈
 
 - **框架**: Astro 7
-- **内容**: MDX（`import.meta.glob` 路由 + `_meta.ts` 侧边栏）
+- **内容**: Content Collections（`.md` / `.mdx` Schema 校验 + `_meta.ts` 侧边栏）
 - **搜索**: Pagefind（构建期索引）
-- **加密**: StatiCrypt（客户端 AES，单页）
+- **加密**: StatiCrypt（客户端 AES，由 frontmatter `protected: true` 驱动）
 - **构建**: SSG → `dist/`
 - **部署**: Vercel / Netlify / Cloudflare Pages
 
@@ -64,11 +64,11 @@ export default meta
 
 ## 构建流程
 
-1. 确认构建环境已设置 `STATICRYPT_PASSWORD`。
-2. 用 Astro 将 MDX 渲染为静态 HTML。
-3. 用 StatiCrypt 加密 `dist/docs/dev/secret/index.html`。
+1. 扫描文档 frontmatter，若存在 `protected: true` 的文档则确认构建环境已设置 `STATICRYPT_PASSWORD`。
+2. 用 Astro Content Collections 校验并渲染静态 HTML（同时校验 `_meta.ts` 无死链或重复项）。
+3. 用 StatiCrypt 加密所有标记了 `protected: true` 的静态页面。
 4. 用 Pagefind 索引带 `data-pagefind-body` 的公开正文。
-5. 检查密码页能否正确解密，并核对搜索索引收录的页面。
+5. 检查密码页能否正确解密，并核对搜索索引收录的公开页面。
 
 ## 加密的边界
 

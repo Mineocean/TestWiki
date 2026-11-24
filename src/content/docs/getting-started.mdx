@@ -48,7 +48,7 @@ npm run preview
 
 ## 主题切换
 
-站点默认使用亮色主题。点击工具栏右侧的主题按钮可切换亮色与暗色，手动选择会保存在当前浏览器。共享样式位于 `public/sage.css`。
+站点默认跟随系统主题偏好（`prefers-color-scheme`）。点击工具栏右侧的主题按钮可手动切换亮色与暗色，选择会保存在当前浏览器。共享样式位于 `public/sage.css`。
 
 ## 搜索
 
@@ -58,7 +58,7 @@ npm run preview
 
 ## 添加新文档
 
-1. 在 `src/content/docs/` 创建 `.mdx` 文件，写入 `title` 和可选的 `description`。
+1. 在 `src/content/docs/` 创建 `.md` 或 `.mdx` 文件，写入 `title` 以及可选的 `description`、`protected: true`。
 2. 在 `src/content/docs/_meta.ts` 中添加标题与路径：
 
 ```ts

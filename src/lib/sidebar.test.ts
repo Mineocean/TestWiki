@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { renderSidebar, type MetaEntry } from './sidebar'
+import {
+  assertValidSidebar,
+  collectSidebarSlugs,
+  renderSidebar,
+  validateSidebar,
+  type MetaEntry,
+} from './sidebar'
 
 describe('renderSidebar', () => {
   it('renders a single MetaItem as a sidebar link', () => {
@@ -145,5 +151,55 @@ describe('renderSidebar', () => {
 
     expect(html).toContain('aria-current="page">Details')
     expect(html).not.toContain('aria-current="page">Guide')
+  })
+})
+
+describe('validateSidebar', () => {
+  it('collects slugs from standalone items and groups in order', () => {
+    const entries: MetaEntry[] = [
+      { label: '快速开始', slug: 'getting-started' },
+      {
+        label: '开发指南',
+        slug: 'dev',
+        items: [
+          { label: '架构设计', slug: 'dev/architecture' },
+          { label: '接口说明', slug: 'dev/api-reference' },
+        ],
+      },
+    ]
+
+    expect(collectSidebarSlugs(entries)).toEqual([
+      'getting-started',
+      'dev/architecture',
+      'dev/api-reference',
+    ])
+  })
+
+  it('reports missing, duplicate, and unlisted slugs', () => {
+    const entries: MetaEntry[] = [
+      { label: '快速开始', slug: 'getting-started' },
+      { label: '重复项', slug: 'getting-started' },
+      { label: '不存在', slug: 'dev/missing' },
+    ]
+
+    expect(validateSidebar(entries, ['getting-started', 'dev/orphan'])).toEqual({
+      missingSlugs: ['dev/missing'],
+      duplicateSlugs: ['getting-started'],
+      unlistedSlugs: ['dev/orphan'],
+    })
+  })
+
+  it('throws on broken or duplicate sidebar entries and passes when valid', () => {
+    const valid: MetaEntry[] = [{ label: '快速开始', slug: 'getting-started' }]
+    expect(() => assertValidSidebar(valid, ['getting-started', 'dev/unlisted'])).not.toThrow()
+
+    const broken: MetaEntry[] = [{ label: '死链', slug: 'dev/missing' }]
+    expect(() => assertValidSidebar(broken, ['getting-started'])).toThrow(/missing docs for slugs: dev\/missing/)
+
+    const duplicate: MetaEntry[] = [
+      { label: 'A', slug: 'getting-started' },
+      { label: 'B', slug: 'getting-started' },
+    ]
+    expect(() => assertValidSidebar(duplicate, ['getting-started'])).toThrow(/duplicate slugs: getting-started/)
   })
 })

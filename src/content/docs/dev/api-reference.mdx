@@ -3,7 +3,7 @@ title: 接口说明
 description: 站点配置与接口说明。
 ---
 
-> Astro + `import.meta.glob` 驱动的文档站点。以下说明涵盖配置方式。
+> Astro Content Collections 驱动的文档站点。以下说明涵盖配置方式。
 
 ---
 
@@ -57,16 +57,17 @@ type MetaEntry = MetaItem | MetaGroup
 
 ## 页面 Frontmatter
 
-每个 `.mdx` 文件仅需：
+每个 `.md` 或 `.mdx` 文件由 `src/content.config.ts` 进行 Schema 校验：
 
 ```yaml
 ---
 title: 页面标题
 description: 可选描述（SEO）
+protected: false # 可选，设为 true 时构建期自动加密并排除出搜索索引
 ---
 ```
 
-文档路由 `[...slug].astro` 使用 `DocsLayout` 渲染页面。
+文档路由 `[...slug].astro` 使用 `DocsLayout` 渲染页面，并在构建期校验 `_meta.ts` 是否存在死链或重复项。
 
 ---
 
@@ -74,7 +75,7 @@ description: 可选描述（SEO）
 
 | 变量 | 用途 |
 |------|------|
-| `STATICRYPT_PASSWORD` | 加密 `docs/dev/secret` 的密码，构建时必填（`.env` 或 CI secret） |
+| `STATICRYPT_PASSWORD` | 加密标记为 `protected: true` 文档的密码，存在受保护文档时构建必填（`.env` 或 CI secret） |
 
 ---
 
